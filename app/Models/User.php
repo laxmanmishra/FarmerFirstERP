@@ -128,6 +128,17 @@ class User extends Authenticatable
             ?? new Collection;
     }
 
+    /**
+     * The branch new records are created in: the selected branch if still accessible,
+     * otherwise the first accessible branch (API/mobile users never pick one).
+     */
+    public function workingBranch(): ?Branch
+    {
+        $branches = $this->accessibleBranches();
+
+        return $branches->firstWhere('id', $this->current_branch_id) ?? $branches->first();
+    }
+
     public function canAccessBranch(Branch|int $branch): bool
     {
         $branchId = $branch instanceof Branch ? $branch->id : $branch;
