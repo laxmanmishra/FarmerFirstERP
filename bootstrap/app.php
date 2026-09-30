@@ -52,7 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return match (true) {
                 $e instanceof ValidationException => ApiResponse::error($e->getMessage(), 'validation_error', 422, $e->errors()),
-                $e instanceof BusinessRuleException => ApiResponse::error($e->getMessage(), 'business_rule_error', 422, ['rule' => [$e->rule]]),
+                $e instanceof BusinessRuleException => ApiResponse::error($e->getMessage(), 'business_rule_error', 422, ['rule' => [$e->rule]], $e->context),
                 $e instanceof AuthenticationException => ApiResponse::error('Unauthenticated.', 'unauthenticated', 401),
                 $e instanceof AuthorizationException,
                 $e instanceof AccessDeniedHttpException,

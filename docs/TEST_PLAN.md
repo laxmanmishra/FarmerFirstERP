@@ -32,5 +32,19 @@ Run: `php artisan test --compact` (SQLite in-memory). MySQL: `DB_CONNECTION=mysq
 - Admin screens: create/edit/deactivate users, employees (multi-department/branch), roles permission sync, branches, departments.
 - API: token issue, `/me`, envelope format, 401/403/422 shapes, request id header.
 
+## 3a. Phase 2 coverage (implemented)
+- Workflow engine: admin-added stage usable without code changes, flags enforced, controlled transitions by role, inactive stages refused, used stages undeletable and code-locked, initial + completion guards, immutable history.
+- Enquiries: numbering, UNVERIFIED + history, temperature bands (unit) and nightly refresh, past dates refused, duplicate detection by farmer/mobile/product/deal type with reasoned override, exchange + multi-line requirements, edit refused when closed, assignment rules and notifications.
+- Telecaller: single-holder claim, expired-claim takeover, claim required, VALID → pipeline, INVALID needs remark and closes, CALLBACK needs a future time, immutable call attempts, screen flow.
+- Pipeline: moves with history, LOST needs a configured reason, WON closes + EnquiryWon, direct reopen to last open stage, rejected → validation queue, WON not reopenable, request → approve/reject with separation of duties and notifications, drag-and-drop with and without permission.
+- Visibility: own / team / all / branch scope, 404 for other salesmen's enquiries (web + API), private exchange photos.
+- Follow-ups: schedule / complete / next, owner-or-manager rule, derived overdue, idempotent reminders.
+- Territory: one primary per area (service + DB), replacement keeps history, village > tehsil > district precedence, inactive salesman skipped.
+- Geography import: preview without writes, all-or-nothing on errors, XLSX, screen flow + audit.
+- API: farmer/enquiry creation, duplicate contexts, envelope errors, visibility, follow-ups.
+- Every CRM/admin screen renders with demo data and is refused without permission.
+
+The suite also runs on MySQL 8: `composer test:mysql` (database `farmer_first_erp_test`).
+
 ## 4. Acceptance traceability
 Each SRS acceptance list (`docs/SRS.md` §3) maps to feature tests named `test_<requirement_id>_…` added in the phase that implements the module.

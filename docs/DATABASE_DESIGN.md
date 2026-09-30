@@ -67,7 +67,8 @@ consuming table's unique index on `*_no` is the final guard.
 
 ## 3. Planned schema by phase (outline)
 
-**Phase 2 — Workflow & CRM**
+**Phase 2 — Workflow & CRM (implemented)** — plus `brands`, `products`, `product_variants`, `lookup_values`,
+`territory_assignments` (unique `primary_scope` = one active primary per area), `import_batches`.
 `workflow_definitions(code UQ, module, name)`, `workflow_stages(definition_id, code, name, sequence, color,
 is_initial, is_final, is_completion, is_hold, is_rejection, blocks_delivery, requires_remark,
 requires_document, requires_followup, requires_approval, sla_hours, is_active)` UQ(definition_id, code),

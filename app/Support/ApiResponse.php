@@ -43,14 +43,16 @@ final class ApiResponse
 
     /**
      * @param  array<string, mixed>  $errors
+     * @param  array<string, mixed>  $context  machine-readable details, e.g. duplicate record ids
      */
-    public static function error(string $message, string $type, int $status, array $errors = []): JsonResponse
+    public static function error(string $message, string $type, int $status, array $errors = [], array $context = []): JsonResponse
     {
         return response()->json(array_filter([
             'success' => false,
             'message' => $message,
             'type' => $type,
             'errors' => $errors === [] ? null : $errors,
+            'context' => $context === [] ? null : $context,
             'request_id' => request()->attributes->get('request_id'),
         ], fn ($value) => $value !== null), $status);
     }

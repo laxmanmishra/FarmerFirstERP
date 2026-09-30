@@ -41,6 +41,21 @@ Every response carries header `X-Request-Id`.
 | GET | `/api/v1/geography/districts/{id}/tehsils` | |
 | GET | `/api/v1/geography/tehsils/{id}/villages` | |
 
+## Phase 2 endpoints (implemented)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/v1/farmers` | `?search=` name, mobile or farmer no (branch-scoped) |
+| POST | `/api/v1/farmers` | create; send `confirm_not_duplicate=true` after a `duplicate_farmer` 422 (matches in `context.farmer_ids`) |
+| GET | `/api/v1/farmers/{id}` | farmer with village / tehsil / district |
+| GET | `/api/v1/enquiries` | visible enquiries; `filter[view]=open\|validation\|pipeline`, `filter[farmer_id]`, `search` |
+| POST | `/api/v1/enquiries/duplicates` | potential duplicates before submitting (SRS §9) |
+| POST | `/api/v1/enquiries` | create; `duplicate_override_reason` required after a `duplicate_enquiry` 422 (`context.enquiry_ids`) |
+| GET | `/api/v1/enquiries/{id}` | detail (404 when not visible) |
+| GET | `/api/v1/follow-ups` | `filter[status]=today\|overdue\|upcoming\|all_pending` |
+| POST | `/api/v1/follow-ups/{id}/complete` | `{ "outcome": "…" }` |
+
+Business-rule errors carry machine-readable `context` (e.g. duplicate ids) alongside `type: business_rule_error`.
+
 ## Planned (per phase)
 `farmers`, `enquiries` (+ `duplicates` check endpoint), `telecaller/queue`, `telecaller/{enquiry}/claim`,
 `call-attempts`, `follow-ups`, `pipeline`, `customers`, `quotations`, `deals`, `deals/{id}/approve`, `orders`,

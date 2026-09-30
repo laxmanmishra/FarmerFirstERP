@@ -101,7 +101,7 @@ production `APP_DEBUG=false` with request-ID-tagged generic error pages.
 | Phase | Scope | Status |
 |---|---|---|
 | 1 Foundation | Org structure, geography, auth, RBAC, audit, number series, settings, UI shell, admin screens, API envelope | **Done** (see §10) |
-| 2 CRM | Workflow engine (pulled forward), farmers, enquiries + duplicate check + temperature, telecaller queue/claim/call attempts, follow-ups, territory assignment, geography import | Planned |
+| 2 CRM | Workflow engine (pulled forward), products, farmers, enquiries + duplicate check + temperature, telecaller queue/claim/call attempts, pipeline + reopen, follow-ups, territory, geography import, CRM API | **Done** (see §11) |
 | 3 Sales | Pipeline (Kanban), products/price master, quotations, customers + duplicate service, Customer 360, deals + approval | Planned |
 | 4 Orders & Documents | Orders, fulfilment + tasks, document center, requirements, verification, reuse, documentation dashboard | Planned |
 | 5 Fulfilment | Retail & Finance, Accounts, Inventory | Planned |
@@ -123,3 +123,23 @@ production `APP_DEBUG=false` with request-ID-tagged generic error pages.
 - **Deferred to later phases** (not stubbed): global search, notification generation (the bell reads the real
   `notifications` table, which stays empty until Phase 10 events exist), geography Excel/CSV import (Phase 2),
   2FA, Docker compose (Phase 10).
+
+## 11. Phase 2 implementation notes
+- **Workflow engine** (`WorkflowService`, `workflow_*` tables) drives enquiry validation and the sales pipeline.
+  Definitions are uncontrolled by default (any move between active open stages); Administration → Workflow
+  Configuration can add/rename/reorder/deactivate stages, set behaviour flags and switch on controlled,
+  role-restricted, effective-dated transitions. Guards: used stages are never deleted and keep their code; every
+  workflow keeps an active initial and an active final+completion stage.
+- **Enquiry state** = two stage columns (`validation_stage_id`, `pipeline_stage_id`) + `closed_at` as the single
+  "closed" truth. VALID moves the enquiry into the pipeline's initial stage; other final validation outcomes close it.
+- **Assignment rule**: explicit (needs `enquiries.assign`) → creator if they only see their own enquiries → most
+  specific primary salesman of the village's territory → unassigned. Territory uniqueness is enforced by the
+  `primary_scope` unique column.
+- **Claims** are a single conditional UPDATE (race-safe) with a timeout; `crm:release-stale-claims` tidies them.
+- **Temperature** is stored for filtering and refreshed nightly by `crm:refresh-temperatures`.
+- **Notifications** (assignment, reopen requested/decided, follow-up due/overdue) are queued database
+  notifications: run `php artisan queue:work` (or `composer run dev`) and `php artisan schedule:work` locally.
+- **EnquiryWon** is dispatched after commit when an enquiry reaches a final+completion pipeline stage; Phase 3
+  attaches customer creation to it. Until then WON closes the enquiry only.
+- **Windows note**: translation keys that equal a lang file name (`__('Validation')`) return arrays on
+  case-insensitive filesystems — use descriptive keys.
