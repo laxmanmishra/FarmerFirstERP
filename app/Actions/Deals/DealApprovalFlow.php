@@ -2,6 +2,7 @@
 
 namespace App\Actions\Deals;
 
+use App\Actions\Orders\CreateOrderFromDeal;
 use App\Enums\DealDecision;
 use App\Events\DealApproved;
 use App\Exceptions\BusinessRuleException;
@@ -22,12 +23,14 @@ use Illuminate\Support\Facades\Notification;
  *
  * Separation of duties: the submitter and the primary salesman cannot decide.
  * Every submission and decision stores an immutable snapshot of the commercial values.
+ * Approval books the ORDER in the same transaction (SRS §15).
  */
 class DealApprovalFlow
 {
     public function __construct(
         private readonly WorkflowService $workflow,
         private readonly DealReadiness $readiness,
+        private readonly CreateOrderFromDeal $createOrder,
     ) {}
 
     /**
@@ -129,6 +132,11 @@ class DealApprovalFlow
             }
 
             $this->record($deal, $decision, $actor, $remarks);
+
+            if ($decision === DealDecision::Approved) {
+                // Approval and booking succeed or fail together (docs/WORKFLOW.md §3.4).
+                $this->createOrder->handle($deal, $actor);
+            }
         });
 
         $deal->refresh();

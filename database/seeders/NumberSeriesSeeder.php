@@ -25,6 +25,7 @@ class NumberSeriesSeeder extends Seeder
             'quotation' => ['Quotation', 'QT', '{prefix}/{fy}/{seq}', 5, $fy, false],
             'deal' => ['Deal', 'DL', '{prefix}/{fy}/{seq}', 5, $fy, false],
             'order' => ['Order / Booking', 'ORD', '{prefix}/{fy}/{seq}', 5, $fy, false],
+            'fulfilment' => ['Fulfilment', 'FUL', '{prefix}/{fy}/{seq}', 5, $fy, false],
             'finance_file' => ['Finance File', 'FIN', '{prefix}/{fy}/{seq}', 5, $fy, false],
             'account_file' => ['Account File', 'ACC', '{prefix}/{fy}/{seq}', 5, $fy, false],
             'payment' => ['Payment', 'PAY', '{prefix}/{fy}/{seq}', 6, $fy, false],

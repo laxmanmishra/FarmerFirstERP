@@ -50,6 +50,25 @@ class WorkflowSeeder extends Seeder
             ['APPROVED', 'Approved', 'green', ['is_final', 'is_completion', 'is_system']],
             ['REJECTED', 'Rejected', 'rose', ['is_final', 'is_rejection', 'requires_remark', 'is_system']],
         ]);
+
+        // Order stages are moved by business events (booking, fulfilment, delivery), not by hand — hence is_system.
+        $this->definition(WorkflowDefinition::ORDER, 'orders', 'Order / booking', 'Order lifecycle from booking to completion (SRS §15).', [
+            ['BOOKED', 'Booked', 'sky', ['is_initial', 'is_system']],
+            ['IN_FULFILMENT', 'In fulfilment', 'brand', ['is_system']],
+            ['READY_FOR_DELIVERY', 'Ready for delivery', 'green', ['is_system']],
+            ['DELIVERED', 'Delivered', 'green', ['is_system']],
+            ['COMPLETED', 'Completed', 'green', ['is_final', 'is_completion', 'is_system']],
+            ['CANCELLED', 'Cancelled', 'rose', ['is_final', 'is_rejection', 'requires_remark', 'is_system']],
+        ]);
+
+        // Generic department task progress until each department gets its own workflow (Phases 5–6).
+        $this->definition(WorkflowDefinition::FULFILMENT_TASK, 'fulfilment', 'Fulfilment task', 'Operational status of a department task (SRS §23).', [
+            ['PENDING', 'Pending', 'amber', ['is_initial', 'is_system']],
+            ['IN_PROGRESS', 'In progress', 'brand', []],
+            ['ON_HOLD', 'On hold', 'slate', ['is_hold', 'requires_remark']],
+            ['COMPLETED', 'Completed', 'green', ['is_final', 'is_completion']],
+            ['CANCELLED', 'Cancelled', 'rose', ['is_final', 'is_rejection', 'is_system']],
+        ]);
     }
 
     /**

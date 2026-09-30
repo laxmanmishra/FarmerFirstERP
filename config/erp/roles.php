@@ -21,7 +21,7 @@ $departmentEmployee = fn (string $module, array $actions): array => array_merge(
 
 $departmentManager = fn (string $module, string $report): array => array_merge(
     $departmentEmployee($module, ['*']),
-    ['documents.verify', "reports.{$report}", 'reports.export'],
+    ['documents.verify', 'documents.view_sensitive', "reports.{$report}", 'reports.export'],
 );
 
 return [
@@ -32,7 +32,7 @@ return [
     'Sales Manager' => [
         'dashboard.view', 'farmers.*', 'enquiries.*', 'telecaller.queue', 'follow_ups.*', 'pipeline.*', 'territory.*',
         'customers.*', 'products.view', 'quotations.*', 'deals.*', 'orders.view', 'orders.create',
-        'documents.view', 'documents.upload', 'documents.dashboard',
+        'documents.view', 'documents.upload', 'documents.verify', 'documents.view_sensitive', 'documents.dashboard',
         'waivers.view', 'waivers.request', 'waivers.approve', 'waivers.approve_extension', 'readiness.view', 'delivery.view', 'delivery.complete',
         'targets.view_own', 'targets.view_team', 'targets.manage', 'reports.sales', 'reports.customers', 'reports.delivery', 'reports.documents', 'reports.export',
         'employees.view',

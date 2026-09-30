@@ -12,4 +12,5 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('crm:refresh-temperatures')->dailyAt('00:05')->withoutOverlapping()->onOneServer();
 Schedule::command('crm:follow-up-reminders')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
+Schedule::command('documents:mark-expired')->dailyAt('00:15')->withoutOverlapping()->onOneServer();
 Schedule::command('crm:release-stale-claims')->everyFifteenMinutes()->withoutOverlapping()->onOneServer();

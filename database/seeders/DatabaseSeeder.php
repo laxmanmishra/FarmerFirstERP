@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ReferenceDataSeeder::class);
 
         if (! app()->isProduction()) {
-            $this->call([DemoUsersSeeder::class, DemoCatalogueSeeder::class, DemoCrmSeeder::class, DemoSalesSeeder::class]);
+            $this->call([DemoUsersSeeder::class, DemoCatalogueSeeder::class, DemoCrmSeeder::class, DemoSalesSeeder::class, DemoOrdersSeeder::class]);
         }
     }
 }
