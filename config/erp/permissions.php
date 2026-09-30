@@ -46,7 +46,7 @@ return [
     'documents' => ['label' => 'Documents', 'actions' => ['view', 'upload', 'verify', 'view_sensitive', 'configure', 'dashboard']],
     'finance' => ['label' => 'Retail & Finance', 'actions' => ['view', 'update', 'assign', 'configure']],
     'accounts' => ['label' => 'Accounts', 'actions' => ['view', 'record_payment', 'verify_payment', 'clear_payment', 'reverse', 'approve_refund']],
-    'inventory' => ['label' => 'Inventory', 'actions' => ['view', 'inward', 'allocate', 'reallocate', 'transfer']],
+    'inventory' => ['label' => 'Inventory', 'actions' => ['view', 'inward', 'allocate', 'reallocate', 'transfer', 'configure']],
     'rto' => ['label' => 'RTO', 'actions' => ['view', 'update', 'assign']],
     'insurance' => ['label' => 'Insurance', 'actions' => ['view', 'update', 'assign']],
     'pdi' => ['label' => 'PDI / Workshop', 'actions' => ['view', 'inspect', 'approve']],

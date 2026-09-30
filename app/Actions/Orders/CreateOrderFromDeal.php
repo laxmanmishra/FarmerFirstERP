@@ -11,6 +11,7 @@ use App\Models\FulfilmentTaskType;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\WorkflowDefinition;
+use App\Services\DepartmentFileProvisioner;
 use App\Services\DocumentRequirementService;
 use App\Services\NumberSeriesService;
 use App\Services\WorkflowService;
@@ -28,6 +29,7 @@ class CreateOrderFromDeal
         private readonly NumberSeriesService $numbers,
         private readonly WorkflowService $workflow,
         private readonly DocumentRequirementService $requirements,
+        private readonly DepartmentFileProvisioner $files,
     ) {}
 
     public function handle(Deal $deal, User $actor): Order
@@ -90,6 +92,7 @@ class CreateOrderFromDeal
                 $this->workflow->recordInitial($task, $taskStage, $actor);
             }
 
+            $this->files->provision($order, $actor);
             $this->requirements->sync($order, $actor);
 
             OrderBooked::dispatch($order, $actor);

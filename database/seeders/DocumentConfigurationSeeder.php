@@ -23,24 +23,25 @@ class DocumentConfigurationSeeder extends Seeder
         $departments = Department::query()->pluck('id', 'code');
 
         $tasks = [
-            // code => [name, department, condition, blocks delivery, permission to work it]
-            'FINANCE' => ['Retail & Finance', 'RETAIL_FINANCE', 'finance_required', true, 'finance.update'],
-            'ACCOUNTS' => ['Accounts clearance', 'ACCOUNTS', 'always', true, 'accounts.verify_payment'],
-            'INVENTORY' => ['Unit allocation', 'INVENTORY', 'always', true, 'inventory.allocate'],
-            'RTO' => ['RTO registration', 'RTO', 'rto_required', false, 'rto.update'],
-            'INSURANCE' => ['Insurance', 'INSURANCE', 'insurance_required', true, 'insurance.update'],
-            'PDI' => ['PDI inspection', 'PDI', 'pdi_required', true, 'pdi.inspect'],
-            'DELIVERY' => ['Delivery', 'DELIVERY', 'always', false, 'delivery.execute'],
+            // code => [name, department, condition, blocks delivery, permission to work it, driven by]
+            'FINANCE' => ['Retail & Finance', 'RETAIL_FINANCE', 'finance_required', true, 'finance.update', FulfilmentTaskType::DRIVEN_BY_FINANCE_FILE],
+            'ACCOUNTS' => ['Accounts clearance', 'ACCOUNTS', 'always', true, 'accounts.clear_payment', FulfilmentTaskType::DRIVEN_BY_ACCOUNT_FILE],
+            'INVENTORY' => ['Unit allocation', 'INVENTORY', 'always', true, 'inventory.allocate', FulfilmentTaskType::DRIVEN_BY_ALLOCATION],
+            'RTO' => ['RTO registration', 'RTO', 'rto_required', false, 'rto.update', null],
+            'INSURANCE' => ['Insurance', 'INSURANCE', 'insurance_required', true, 'insurance.update', null],
+            'PDI' => ['PDI inspection', 'PDI', 'pdi_required', true, 'pdi.inspect', null],
+            'DELIVERY' => ['Delivery', 'DELIVERY', 'always', false, 'delivery.execute', null],
         ];
 
         foreach (array_keys($tasks) as $index => $code) {
-            [$name, $department, $condition, $blocks, $permission] = $tasks[$code];
+            [$name, $department, $condition, $blocks, $permission, $drivenBy] = $tasks[$code];
             FulfilmentTaskType::query()->firstOrCreate(['code' => $code], [
                 'name' => $name,
                 'department_id' => $departments[$department],
                 'condition' => $condition,
                 'blocks_delivery' => $blocks,
                 'update_permission' => $permission,
+                'driven_by' => $drivenBy,
                 'sort_order' => ($index + 1) * 10,
             ]);
         }

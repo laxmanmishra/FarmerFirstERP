@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Concerns\Followable;
 use App\Models\Enquiry;
 use App\Models\FollowUp;
 
@@ -16,7 +17,7 @@ class FollowUpReminder extends ErpNotification
     {
         $subject = $this->followUp->followable instanceof Enquiry
             ? $this->followUp->followable->enquiry_no.' · '.$this->followUp->followable->farmer->name
-            : __('record');
+            : ($this->followUp->followable instanceof Followable ? $this->followUp->followable->followUpSubject() : __('record'));
 
         return $this->overdue
             ? __('Overdue follow-up (:subject): :purpose', ['subject' => $subject, 'purpose' => $this->followUp->purpose])
@@ -27,6 +28,6 @@ class FollowUpReminder extends ErpNotification
     {
         return $this->followUp->followable instanceof Enquiry
             ? route('crm.enquiries.show', $this->followUp->followable)
-            : route('crm.follow-ups.index');
+            : ($this->followUp->followable instanceof Followable ? $this->followUp->followable->followUpUrl() : route('crm.follow-ups.index'));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Orders;
 
+use App\Actions\Inventory\AllocationFlow;
 use App\Enums\FulfilmentStatus;
 use App\Exceptions\BusinessRuleException;
 use App\Models\FulfilmentTask;
@@ -14,11 +15,15 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Cancels an order with a reason (SRS v6.1 §6–7). Nothing is deleted: the order,
- * its tasks, documents and history stay; open tasks move to Cancelled.
+ * its tasks, documents and history stay; open tasks move to Cancelled, allocated units
+ * return to stock and the finance file is cancelled.
  */
 class CancelOrder
 {
-    public function __construct(private readonly WorkflowService $workflow) {}
+    public function __construct(
+        private readonly WorkflowService $workflow,
+        private readonly AllocationFlow $allocations,
+    ) {}
 
     public function handle(User $actor, Order $order, string $reason): Order
     {
@@ -47,6 +52,13 @@ class CancelOrder
             }
 
             $order->fulfilment->update(['status' => FulfilmentStatus::Cancelled, 'closed_at' => now()]);
+
+            // Units go back to stock and the finance file closes; the account file stays open for refunds.
+            $this->allocations->releaseAll($actor, $order, __('Order cancelled: :reason', ['reason' => $reason]));
+
+            if (($finance = $order->financeFile()->with('stage')->first()) !== null && ! $finance->stage->is_final) {
+                $this->workflow->transition($finance, 'stage_id', WorkflowStage::findByCode(WorkflowDefinition::FINANCE, 'CANCELLED'), $actor, $reason, force: true);
+            }
         });
 
         return $order->fresh(['stage']);

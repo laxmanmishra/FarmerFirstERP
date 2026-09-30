@@ -61,6 +61,41 @@ class WorkflowSeeder extends Seeder
             ['CANCELLED', 'Cancelled', 'rose', ['is_final', 'is_rejection', 'requires_remark', 'is_system']],
         ]);
 
+        // Mirrors what the external financer reports (SRS §57). Readiness uses the completion flag.
+        $this->definition(WorkflowDefinition::FINANCE, 'finance', 'Retail & Finance file', 'Finance file status per external financer (SRS §57, §67).', [
+            ['FILE_CREATED', 'File created', 'slate', ['is_initial']],
+            ['FINANCER_REFERRAL', 'Referred to financer', 'sky', []],
+            ['FI_PENDING', 'Field investigation pending', 'amber', []],
+            ['FI_SCHEDULED', 'Field investigation scheduled', 'amber', []],
+            ['FI_DONE', 'Field investigation done', 'sky', []],
+            ['CREDIT_APPROVAL_PENDING', 'Credit approval pending', 'amber', []],
+            ['CREDIT_APPROVED', 'Credit approved', 'green', []],
+            ['CREDIT_REJECTED', 'Credit rejected', 'rose', ['is_rejection', 'requires_remark']],
+            ['QUOTATION_PENDING', 'Financer quotation pending', 'amber', []],
+            ['QUOTATION_RECEIVED', 'Financer quotation received', 'sky', []],
+            ['DO_PENDING', 'DO pending', 'amber', []],
+            ['DO_RECEIVED', 'DO received', 'green', []],
+            ['DO_EXPIRED', 'DO expired', 'rose', []],
+            ['DISBURSEMENT_PENDING', 'Disbursement pending', 'amber', []],
+            ['DISBURSED', 'Disbursed', 'green', []],
+            ['ON_HOLD', 'On hold', 'slate', ['is_hold', 'requires_remark']],
+            ['CANCELLED', 'Cancelled', 'rose', ['is_final', 'is_rejection', 'requires_remark', 'is_system']],
+            ['FINANCE_COMPLETED', 'Finance completed', 'green', ['is_final', 'is_completion']],
+        ]);
+
+        // Payment position is computed from payments; completion is refused while money is short.
+        $this->definition(WorkflowDefinition::ACCOUNTS, 'accounts', 'Accounts file', 'Accounts clearance of an order (SRS §91–113).', [
+            ['PAYMENT_PENDING', 'Payment pending', 'amber', ['is_initial']],
+            ['ADVANCE_RECEIVED', 'Advance received', 'sky', []],
+            ['PART_PAYMENT_RECEIVED', 'Part payment received', 'sky', []],
+            ['VERIFICATION_PENDING', 'Verification pending', 'amber', []],
+            ['PAYMENT_SHORT', 'Payment short', 'rose', ['is_system']],
+            ['PAYMENT_RETURNED', 'Payment returned', 'rose', []],
+            ['ON_HOLD', 'On hold', 'slate', ['is_hold', 'requires_remark']],
+            ['PAYMENT_CLEARED', 'Payment cleared', 'green', ['is_completion']],
+            ['ACCOUNTS_COMPLETED', 'Accounts completed', 'green', ['is_final', 'is_completion']],
+        ]);
+
         // Generic department task progress until each department gets its own workflow (Phases 5–6).
         $this->definition(WorkflowDefinition::FULFILMENT_TASK, 'fulfilment', 'Fulfilment task', 'Operational status of a department task (SRS §23).', [
             ['PENDING', 'Pending', 'amber', ['is_initial', 'is_system']],

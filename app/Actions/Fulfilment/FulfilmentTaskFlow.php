@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Models\WorkflowDefinition;
 use App\Models\WorkflowStage;
+use App\Services\DepartmentFileProvisioner;
 use App\Services\DocumentRequirementService;
 use App\Services\WorkflowService;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,6 +25,7 @@ class FulfilmentTaskFlow
     public function __construct(
         private readonly WorkflowService $workflow,
         private readonly DocumentRequirementService $requirements,
+        private readonly DepartmentFileProvisioner $files,
     ) {}
 
     /**
@@ -35,7 +37,7 @@ class FulfilmentTaskFlow
     {
         $task->loadMissing(['type', 'stage.definition', 'fulfilment.order']);
 
-        if (! $this->canWork($user, $task) || ! $task->requirement_state->isApplicable() || $task->fulfilment->order->isCancelled()) {
+        if (! $this->canWork($user, $task) || $task->type->driven_by !== null || ! $task->requirement_state->isApplicable() || $task->fulfilment->order->isCancelled()) {
             return new Collection;
         }
 
@@ -60,22 +62,69 @@ class FulfilmentTaskFlow
             throw new BusinessRuleException(__('Tasks are cancelled only by cancelling the order.'), 'task_cancel_via_order');
         }
 
+        if ($task->type->driven_by !== null) {
+            throw new BusinessRuleException(__(':task follows its department file; update it there.', ['task' => $task->type->name]), 'task_driven_by_file');
+        }
+
         return DB::transaction(function () use ($actor, $task, $to, $remarks): FulfilmentTask {
-            $this->workflow->transition($task, 'stage_id', $to, $actor, $remarks);
-
-            $task->update([
-                'started_at' => $task->started_at ?? ($to->is_initial ? null : now()),
-                'completed_at' => $to->is_completion ? now() : null,
-            ]);
-
-            $order = $task->fulfilment->order;
-
-            if ($order->stage->code === Order::STAGE_BOOKED && ! $to->is_initial) {
-                $this->workflow->transition($order, 'stage_id', WorkflowStage::findByCode(WorkflowDefinition::ORDER, Order::STAGE_IN_FULFILMENT), $actor, force: true);
-            }
+            $this->apply($actor, $task, $to, $remarks, force: false);
 
             return $task->fresh(['stage']);
         });
+    }
+
+    /**
+     * Moves a file-driven task to follow its department file: completion → Completed,
+     * hold or final rejection → On hold, initial → Pending, anything else → In progress.
+     */
+    public function follow(User $actor, ?FulfilmentTask $task, WorkflowStage $source, ?string $remarks = null): void
+    {
+        if ($task === null) {
+            return;
+        }
+
+        $code = match (true) {
+            $source->is_completion => 'COMPLETED',
+            $source->is_hold || ($source->is_final && $source->is_rejection) => 'ON_HOLD',
+            $source->is_initial => FulfilmentTask::STAGE_PENDING,
+            default => 'IN_PROGRESS',
+        };
+
+        $this->followCode($actor, $task, $code, $code === 'ON_HOLD' ? trim($source->name.': '.($remarks ?? ''), ': ') : null);
+    }
+
+    /**
+     * Moves a file-driven task to the stage with the given code (no-op when already there,
+     * when the order is cancelled or when that stage was deactivated).
+     */
+    public function followCode(User $actor, FulfilmentTask $task, string $code, ?string $remarks = null): void
+    {
+        $task->loadMissing(['stage', 'fulfilment.order.stage']);
+        $to = WorkflowStage::query()->ofDefinition(WorkflowDefinition::FULFILMENT_TASK)->active()->where('code', $code)->first();
+
+        if ($to === null || $task->stage_id === $to->id || $task->fulfilment->order->isCancelled()) {
+            return;
+        }
+
+        $this->apply($actor, $task, $to, $remarks, force: true);
+        $task->unsetRelation('stage');
+    }
+
+    private function apply(User $actor, FulfilmentTask $task, WorkflowStage $to, ?string $remarks, bool $force): void
+    {
+        $this->workflow->transition($task, 'stage_id', $to, $actor, $remarks, force: $force);
+
+        $task->update([
+            'started_at' => $task->started_at ?? ($to->is_initial ? null : now()),
+            'completed_at' => $to->is_completion ? now() : null,
+        ]);
+
+        $order = $task->fulfilment->order;
+
+        if ($order->stage->code === Order::STAGE_BOOKED && ! $to->is_initial) {
+            $this->workflow->transition($order, 'stage_id', WorkflowStage::findByCode(WorkflowDefinition::ORDER, Order::STAGE_IN_FULFILMENT), $actor, force: true);
+            $order->unsetRelation('stage');
+        }
     }
 
     /**
@@ -121,7 +170,9 @@ class FulfilmentTaskFlow
                 'requirement_remarks' => $reason,
             ]);
 
-            $this->requirements->sync($task->fulfilment->order->fresh(), $actor);
+            $order = $task->fulfilment->order->fresh();
+            $this->files->provision($order, $actor);
+            $this->requirements->sync($order, $actor);
         });
 
         return $task;

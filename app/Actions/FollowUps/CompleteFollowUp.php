@@ -4,6 +4,7 @@ namespace App\Actions\FollowUps;
 
 use App\Enums\FollowUpStatus;
 use App\Exceptions\BusinessRuleException;
+use App\Models\Concerns\Followable;
 use App\Models\Enquiry;
 use App\Models\FollowUp;
 use App\Models\User;
@@ -39,6 +40,8 @@ class CompleteFollowUp
 
             if ($next !== null && $followUp->followable instanceof Enquiry) {
                 $this->schedule->handle($actor, $followUp->followable, $followUp->assignee, $next['type_code'], $next['due_at'], $next['purpose']);
+            } elseif ($next !== null && $followUp->followable instanceof Followable) {
+                $this->schedule->forRecord($actor, $followUp->followable, $followUp->assignee, $next['type_code'], $next['due_at'], $next['purpose']);
             }
 
             return $followUp;
@@ -70,8 +73,9 @@ class CompleteFollowUp
         }
 
         $isAssignee = $actor->employee?->id === $followUp->assigned_employee_id;
-        $isManager = $actor->canAny(['enquiries.view_team', 'enquiries.view_all'])
-            && FollowUp::query()->visibleTo($actor)->whereKey($followUp->id)->exists();
+        $isManager = $followUp->followable instanceof Followable
+            ? $actor->can($followUp->followable->followUpManagerPermission()) && $actor->canAccessBranch($followUp->branch_id)
+            : $actor->canAny(['enquiries.view_team', 'enquiries.view_all']) && FollowUp::query()->visibleTo($actor)->whereKey($followUp->id)->exists();
 
         if (! $isAssignee && ! $isManager) {
             throw new BusinessRuleException(__('Only the assigned employee or their manager can update this follow-up.'), 'not_follow_up_owner');

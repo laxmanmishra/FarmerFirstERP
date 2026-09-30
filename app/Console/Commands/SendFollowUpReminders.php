@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Enquiry;
+use App\Models\FinanceFile;
 use App\Models\FollowUp;
 use App\Notifications\FollowUpReminder;
 use Illuminate\Console\Attributes\Description;
@@ -22,7 +24,7 @@ class SendFollowUpReminders extends Command
         $lead = now()->addMinutes(config('erp.crm.follow_up_reminder_minutes'));
 
         FollowUp::query()->pending()->whereNull('reminded_at')->whereBetween('due_at', [now(), $lead])
-            ->with(['assignee.user', 'followable'])->chunkById(200, function ($followUps) use (&$sent): void {
+            ->with(['assignee.user', 'followable' => fn ($morph) => $morph->morphWith([Enquiry::class => ['farmer'], FinanceFile::class => ['order.customer']])])->chunkById(200, function ($followUps) use (&$sent): void {
                 foreach ($followUps as $followUp) {
                     $followUp->assignee->user?->notify(new FollowUpReminder($followUp));
                     FollowUp::query()->whereKey($followUp->id)->update(['reminded_at' => now()]);
@@ -31,7 +33,7 @@ class SendFollowUpReminders extends Command
             });
 
         FollowUp::query()->overdue()->whereNull('overdue_notified_at')
-            ->with(['assignee.user', 'followable'])->chunkById(200, function ($followUps) use (&$sent): void {
+            ->with(['assignee.user', 'followable' => fn ($morph) => $morph->morphWith([Enquiry::class => ['farmer'], FinanceFile::class => ['order.customer']])])->chunkById(200, function ($followUps) use (&$sent): void {
                 foreach ($followUps as $followUp) {
                     $followUp->assignee->user?->notify(new FollowUpReminder($followUp, overdue: true));
                     FollowUp::query()->whereKey($followUp->id)->update(['overdue_notified_at' => now()]);

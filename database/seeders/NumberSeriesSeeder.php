@@ -29,6 +29,7 @@ class NumberSeriesSeeder extends Seeder
             'finance_file' => ['Finance File', 'FIN', '{prefix}/{fy}/{seq}', 5, $fy, false],
             'account_file' => ['Account File', 'ACC', '{prefix}/{fy}/{seq}', 5, $fy, false],
             'payment' => ['Payment', 'PAY', '{prefix}/{fy}/{seq}', 6, $fy, false],
+            'refund' => ['Refund', 'REF', '{prefix}/{fy}/{seq}', 5, $fy, false],
             'receipt' => ['Receipt', 'RCP', '{prefix}/{branch}/{fy}/{seq}', 5, $fy, true],
             'rto_file' => ['RTO File', 'RTO', '{prefix}/{fy}/{seq}', 5, $fy, false],
             'insurance_file' => ['Insurance File', 'INS', '{prefix}/{fy}/{seq}', 5, $fy, false],
