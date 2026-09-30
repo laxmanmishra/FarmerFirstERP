@@ -23,6 +23,12 @@ class SaveWorkflowStage
     public function handle(WorkflowDefinition $definition, array $attributes, ?WorkflowStage $stage = null): WorkflowStage
     {
         return DB::transaction(function () use ($definition, $attributes, $stage): WorkflowStage {
+            unset($attributes['is_system']);
+
+            if ($stage?->is_system && $stage->code !== $attributes['code']) {
+                throw new BusinessRuleException(__('The code of a system stage cannot change.'), 'stage_code_locked');
+            }
+
             if ($stage !== null && $stage->code !== $attributes['code'] && $stage->isUsed()) {
                 throw new BusinessRuleException(__('The code of a stage that has been used cannot change.'), 'stage_code_locked');
             }
@@ -43,6 +49,10 @@ class SaveWorkflowStage
 
     public function toggleActive(WorkflowStage $stage): WorkflowStage
     {
+        if ($stage->is_system && $stage->is_active) {
+            throw new BusinessRuleException(__('":name" is a system stage the application relies on. It can be renamed but not deactivated.', ['name' => $stage->name]), 'stage_system');
+        }
+
         return DB::transaction(function () use ($stage): WorkflowStage {
             $stage->update(['is_active' => ! $stage->is_active]);
             $this->assertIntegrity($stage->definition);
@@ -56,7 +66,7 @@ class SaveWorkflowStage
      */
     public function delete(WorkflowStage $stage): void
     {
-        if ($stage->isUsed()) {
+        if ($stage->is_system || $stage->isUsed()) {
             throw new BusinessRuleException(__('This stage has been used and can only be deactivated, so history stays intact.'), 'stage_in_use');
         }
 

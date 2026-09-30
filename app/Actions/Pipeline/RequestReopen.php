@@ -38,8 +38,7 @@ class RequestReopen
             'status' => ApprovalStatus::Pending,
         ]);
 
-        $approvers = User::permission('enquiries.reopen')->active()->whereKeyNot($actor->id)->get()
-            ->filter(fn (User $user) => $user->canAccessBranch($enquiry->branch_id));
+        $approvers = User::withPermissionInBranch('enquiries.reopen', $enquiry->branch_id, $actor);
 
         Notification::send($approvers, new ReopenRequested($request));
 

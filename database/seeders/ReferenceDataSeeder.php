@@ -18,6 +18,7 @@ class ReferenceDataSeeder extends Seeder
             NumberSeriesSeeder::class,
             WorkflowSeeder::class,
             LookupSeeder::class,
+            DiscountLimitSeeder::class,
         ]);
     }
 }

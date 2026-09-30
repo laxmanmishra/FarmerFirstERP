@@ -41,6 +41,15 @@ class WorkflowSeeder extends Seeder
             ['LOST', 'Lost', 'rose', ['is_final', 'is_rejection', 'requires_remark']],
             ['DROPPED', 'Dropped', 'slate', ['is_final', 'is_rejection', 'requires_remark']],
         ]);
+
+        // Deal approval stages are referenced by code (SRS §14: Approve / Send Back / Reject), hence is_system.
+        $this->definition(WorkflowDefinition::DEAL, 'sales', 'Deal approval', 'Deal Ready → Manager/Owner review (SRS §14).', [
+            ['DRAFT', 'Draft', 'slate', ['is_initial', 'is_system']],
+            ['DEAL_READY', 'Deal ready — awaiting approval', 'amber', ['is_system']],
+            ['SENT_BACK', 'Sent back', 'violet', ['requires_remark', 'is_system']],
+            ['APPROVED', 'Approved', 'green', ['is_final', 'is_completion', 'is_system']],
+            ['REJECTED', 'Rejected', 'rose', ['is_final', 'is_rejection', 'requires_remark', 'is_system']],
+        ]);
     }
 
     /**
