@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * (`pipeline_stage_id`, set once the enquiry is validated).
  */
 #[Fillable([
-    'enquiry_no', 'farmer_id', 'branch_id', 'village_id', 'created_by_employee_id', 'assigned_employee_id',
+    'enquiry_no', 'farmer_id', 'customer_id', 'branch_id', 'village_id', 'created_by_employee_id', 'assigned_employee_id',
     'source_code', 'deal_type', 'expected_purchase_date', 'temperature', 'budget', 'remarks',
     'validation_stage_id', 'pipeline_stage_id', 'claimed_by_employee_id', 'claimed_at', 'callback_at',
     'validated_at', 'validated_by_employee_id', 'closed_at', 'close_reason_code', 'close_remarks',
@@ -55,6 +55,30 @@ class Enquiry extends Model
     public function farmer(): BelongsTo
     {
         return $this->belongsTo(Farmer::class);
+    }
+
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * @return HasOne<Deal, $this>
+     */
+    public function deal(): HasOne
+    {
+        return $this->hasOne(Deal::class);
+    }
+
+    /**
+     * @return HasMany<Quotation, $this>
+     */
+    public function quotations(): HasMany
+    {
+        return $this->hasMany(Quotation::class)->orderByDesc('id');
     }
 
     /**

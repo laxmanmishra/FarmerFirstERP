@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'workflow_definition_id', 'code', 'name', 'sequence', 'color', 'is_initial', 'is_final', 'is_completion',
     'is_hold', 'is_rejection', 'blocks_delivery', 'requires_remark', 'requires_followup', 'requires_document',
-    'sla_hours', 'is_active',
+    'sla_hours', 'is_active', 'is_system',
 ])]
 class WorkflowStage extends Model
 {
@@ -36,7 +36,7 @@ class WorkflowStage extends Model
      * @var array<string, mixed>
      */
     protected $attributes = [
-        'is_active' => true, 'color' => 'slate', 'is_initial' => false, 'is_final' => false, 'is_completion' => false,
+        'is_active' => true, 'is_system' => false, 'color' => 'slate', 'is_initial' => false, 'is_final' => false, 'is_completion' => false,
         'is_hold' => false, 'is_rejection' => false, 'blocks_delivery' => false, 'requires_remark' => false,
         'requires_followup' => false, 'requires_document' => false,
     ];
@@ -45,7 +45,7 @@ class WorkflowStage extends Model
 
     protected function casts(): array
     {
-        return array_fill_keys(self::FLAGS, 'boolean') + ['sequence' => 'integer', 'sla_hours' => 'integer'];
+        return array_fill_keys(self::FLAGS, 'boolean') + ['is_system' => 'boolean', 'sequence' => 'integer', 'sla_hours' => 'integer'];
     }
 
     /**

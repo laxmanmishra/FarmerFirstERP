@@ -18,6 +18,8 @@ class WorkflowDefinition extends Model
 
     public const SALES_PIPELINE = 'sales_pipeline';
 
+    public const DEAL = 'deal';
+
     protected string $auditModule = 'workflow';
 
     protected function casts(): array

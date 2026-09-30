@@ -129,6 +129,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Active users holding $permission who can work in $branchId (e.g. approvers to notify).
+     * Loads roles and employee up front so filtering never lazy-loads per user.
+     *
+     * @return Collection<int, User>
+     */
+    public static function withPermissionInBranch(string $permission, int $branchId, ?User $except = null): Collection
+    {
+        return static::permission($permission)->active()
+            ->when($except, fn (Builder $query) => $query->whereKeyNot($except->id))
+            ->with(['roles', 'employee'])
+            ->get()
+            ->filter(fn (User $user) => $user->canAccessBranch($branchId))
+            ->values();
+    }
+
+    /**
      * The branch new records are created in: the selected branch if still accessible,
      * otherwise the first accessible branch (API/mobile users never pick one).
      */
