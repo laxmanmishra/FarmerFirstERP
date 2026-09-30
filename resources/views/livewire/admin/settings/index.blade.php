@@ -6,6 +6,7 @@
         $tabs = [];
         if (auth()->user()->can('settings.view')) { $tabs['company'] = __('Company'); }
         if (auth()->user()->can('number_series.manage')) { $tabs['numbering'] = __('Number series'); }
+        if (auth()->user()->can('settings.view')) { $tabs['lists'] = __('Lists'); }
     @endphp
     <x-ui.tabs class="mb-6" :active="$tab" :tabs="$tabs" />
 
@@ -28,6 +29,8 @@
                 @endif
             </form>
         </x-ui.card>
+    @elseif ($tab === 'lists')
+        <livewire:admin.settings.lists />
     @else
         <x-ui.alert class="mb-4">
             {{ __('Tokens: {prefix}, {branch}, {fy} (e.g. 2026-27), {yyyy}, {seq}. Numbers are issued inside the saving transaction and are unique within their scope.') }}

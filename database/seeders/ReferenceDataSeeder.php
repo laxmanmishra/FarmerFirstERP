@@ -16,6 +16,8 @@ class ReferenceDataSeeder extends Seeder
             GeographySeeder::class,
             OrganisationSeeder::class,
             NumberSeriesSeeder::class,
+            WorkflowSeeder::class,
+            LookupSeeder::class,
         ]);
     }
 }
