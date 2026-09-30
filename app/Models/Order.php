@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\LineType;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\HasUserstamps;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -84,6 +85,46 @@ class Order extends Model
     public function fulfilment(): HasOne
     {
         return $this->hasOne(Fulfilment::class);
+    }
+
+    /**
+     * @return HasOne<FinanceFile, $this>
+     */
+    public function financeFile(): HasOne
+    {
+        return $this->hasOne(FinanceFile::class);
+    }
+
+    /**
+     * @return HasOne<AccountFile, $this>
+     */
+    public function accountFile(): HasOne
+    {
+        return $this->hasOne(AccountFile::class);
+    }
+
+    /**
+     * @return HasMany<StockAllocation, $this>
+     */
+    public function allocations(): HasMany
+    {
+        return $this->hasMany(StockAllocation::class)->latest('id');
+    }
+
+    /**
+     * @return HasMany<StockAllocation, $this>
+     */
+    public function activeAllocations(): HasMany
+    {
+        return $this->hasMany(StockAllocation::class)->whereNull('released_at');
+    }
+
+    /**
+     * Physical units the order needs: the quantity of its product lines.
+     */
+    public function unitsRequired(): int
+    {
+        return (int) $this->items->where('line_type', LineType::Product)->sum('quantity');
     }
 
     /**

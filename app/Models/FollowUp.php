@@ -58,6 +58,14 @@ class FollowUp extends Model
         return $this->belongsTo(Employee::class, 'assigned_employee_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function completedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'completed_by');
+    }
+
     public function isOverdue(): bool
     {
         return $this->status === FollowUpStatus::Pending && $this->due_at->isPast();

@@ -12,12 +12,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Configured department task created for each new order (SRS §23), e.g. Finance when
- * the deal needs finance. `update_permission` decides who may work the task.
+ * the deal needs finance. `update_permission` decides who may work the task; tasks with
+ * `driven_by` follow their department file (finance file, account file, unit allocation).
  */
-#[Fillable(['code', 'name', 'department_id', 'condition', 'blocks_delivery', 'update_permission', 'sort_order', 'is_active'])]
+#[Fillable(['code', 'name', 'department_id', 'condition', 'blocks_delivery', 'update_permission', 'driven_by', 'sort_order', 'is_active'])]
 class FulfilmentTaskType extends Model
 {
     use Auditable, HasActiveFlag, HasUserstamps;
+
+    public const DRIVEN_BY_FINANCE_FILE = 'finance_file';
+
+    public const DRIVEN_BY_ACCOUNT_FILE = 'account_file';
+
+    public const DRIVEN_BY_ALLOCATION = 'allocation';
 
     protected string $auditModule = 'fulfilment';
 
