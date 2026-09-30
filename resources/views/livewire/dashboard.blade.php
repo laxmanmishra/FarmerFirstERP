@@ -2,7 +2,17 @@
     <x-ui.page-header :title="__('Good :part, :name', ['part' => now()->hour < 12 ? __('morning') : (now()->hour < 17 ? __('afternoon') : __('evening')), 'name' => \Illuminate\Support\Str::before($user->name, ' ')])"
         :description="__('Here is what is happening across Farmer First today.')" />
 
+    @if ($crm !== [])
+        <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Sales & CRM') }}</h2>
+        <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            @foreach ($crm as $kpi)
+                <x-ui.kpi-card :label="$kpi['label']" :value="number_format($kpi['value'])" :icon="$kpi['icon']" :href="$kpi['href']" :tone="$kpi['tone']" />
+            @endforeach
+        </div>
+    @endif
+
     @if ($organisation !== [])
+        <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Organisation') }}</h2>
         <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             @foreach ($organisation as $kpi)
                 <x-ui.kpi-card :label="$kpi['label']" :value="number_format($kpi['value'])" :icon="$kpi['icon']" :href="$kpi['href']" :tone="$kpi['tone']" />
@@ -15,7 +25,6 @@
             <x-ui.card :title="__('Operational dashboards')" :description="__('KPIs switch on automatically as each module goes live.')">
                 <ol class="grid gap-3 sm:grid-cols-2">
                     @foreach ([
-                        ['CRM', __('Farmers, enquiries, telecaller validation, follow-ups'), 2],
                         ['Sales', __('Pipeline, quotations, deals, approvals, Customer 360'), 3],
                         ['Orders & Documents', __('Orders, fulfilment tasks, central document centre'), 4],
                         ['Fulfilment', __('Retail & Finance, Accounts, Inventory'), 5],

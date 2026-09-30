@@ -22,6 +22,8 @@ return [
         ['label' => 'Telecaller', 'route' => 'crm.telecaller.index', 'icon' => 'phone', 'permission' => 'telecaller.queue'],
         ['label' => 'Follow-ups', 'route' => 'crm.follow-ups.index', 'icon' => 'calendar', 'permission' => 'follow_ups.view'],
         ['label' => 'Sales Pipeline', 'route' => 'crm.pipeline.index', 'icon' => 'columns', 'permission' => 'pipeline.view'],
+        ['label' => 'Reopen Requests', 'route' => 'crm.reopen-requests.index', 'icon' => 'refresh', 'permission' => 'enquiries.reopen'],
+        ['label' => 'Territory', 'route' => 'crm.territory.index', 'icon' => 'map', 'permission' => 'territory.view'],
     ]],
 
     ['label' => 'Sales', 'icon' => 'briefcase', 'items' => [

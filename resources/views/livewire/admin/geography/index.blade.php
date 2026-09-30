@@ -6,6 +6,9 @@
     <x-ui.page-header :title="__('Geography')" :description="__('Territory hierarchy used by farmers, enquiries, salesman territory and reports.')"
         :breadcrumbs="[__('Administration') => null, __('Geography') => null]">
         <x-slot:actions>
+            @can('geography.import')
+                <x-ui.button variant="secondary" icon="arrow-up" :href="route('admin.geography.import')" wire:navigate>{{ __('Import Excel / CSV') }}</x-ui.button>
+            @endcan
             @can('geography.manage')
                 <x-ui.button icon="plus" wire:click="create">{{ __('New :level', ['level' => mb_strtolower($labels[$tab])]) }}</x-ui.button>
             @endcan
@@ -74,7 +77,7 @@
             </tr>
         @empty
             <x-ui.empty-row :colspan="6" :title="__('No records match these filters')" icon="map">
-                @can('geography.import'){{ __('Bulk Excel/CSV import arrives with the CRM phase.') }}@endcan
+                @can('geography.import'){{ __('Use Import Excel / CSV to load villages in bulk.') }}@endcan
             </x-ui.empty-row>
         @endforelse
     </x-ui.table>
