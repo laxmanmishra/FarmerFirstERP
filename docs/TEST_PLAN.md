@@ -61,5 +61,11 @@ The suite also runs on MySQL 8: `composer test:mysql` (database `farmer_first_er
 - Screens: orders list/detail tabs and visibility, task update / requirement change / cancel flows, checklist upload → verify → use existing, sensitive file access restricted and logged + audited, Document Center dashboard drill-downs, repository and verification queue, document detail reject → new version, configuration admin-only with rule uniqueness and effect on next booking, customer 360 / deal / dashboard integration.
 - API: orders list/detail, upload validation + 201, file access log, visibility 404s.
 
+## 3d. Phase 5 coverage (implemented)
+- Finance: file only for financed orders and on later requirement change (idempotent); file status drives the task (in progress, on hold, completed); completion needs financer + sanction; system stage and manual task moves refused; detail validation and permissions; query lifecycle with required resolution; follow-ups on files incl. manager completion and reminders; cancellation cancels the file.
+- Accounts: receivable from order; verify by another person issues receipt; clear; recording rules (amount, reference, financer/disbursement, future date); amounts immutable; completion blocked while short; **T7** reversal; bounce only for instruments; refunds only when refundable, approved by someone else, paid as negative entry.
+- Inventory: GRN, duplicate chassis/engine (in stock and within GRN), permission; allocation completes the task and release reverts it; **T5** second allocation refused by service and database; product and branch checks; transfer; reallocation keeps history; movements immutable; block/unblock; cancellation returns units.
+- Screens: every department screen/tab renders and is refused without permission; finance workspace (details, status, follow-up, query, financer master); accounts workspace (record, verify, clear, receipt print, error toast); inventory GRN with duplicate check, allocation from the queue, release from the unit page.
+
 ## 4. Acceptance traceability
 Each SRS acceptance list (`docs/SRS.md` §3) maps to feature tests named `test_<requirement_id>_…` added in the phase that implements the module.

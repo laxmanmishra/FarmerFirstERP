@@ -41,7 +41,10 @@ Legend: ● full module · ◐ partial · ○ view · – none
 
 \* Department roles: Retail (finance), Accounts, Inventory, RTO, Insurance, PDI, Delivery — each
 with an *Employee* and *Manager* role. Accounts Employee additionally holds `accounts.clear_payment`;
-reversals and refund approvals are manager-only. Inventory Manager also manages products.
+reversals and refund approvals are manager-only. Inventory Manager also manages products and stock locations
+(`inventory.configure`); releasing, reallocating and blocking units needs `inventory.reallocate` (manager).
+Payments: the recorder can never verify or reverse their own payment; refunds are approved by someone other than the
+requester.
 
 ## 3. Enforcement points
 1. Route middleware `auth`, `active` (deactivated users are logged out immediately).

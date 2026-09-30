@@ -92,12 +92,17 @@ blocks_delivery, update_permission), `fulfilments` (UQ fulfilment_no, UQ order_i
 (UQ order_id + document_type_id + department_id; `document_id` is the reuse link — no separate link tables),
 `document_access_logs` (append-only).
 
-**Phase 5 — Fulfilment**: finance (`finance_files` UQ order_id, `financers`, `financer_contacts`,
-`finance_followups`, `finance_queries`, …); accounts (`account_files`, `payments`, `receipts`,
-`payment_verifications`, `payment_reversals`, `refund_requests`, `refund_transactions`);
-inventory (`stock_locations`, `inventory_items` UQ chassis_no, UQ engine_no, `stock_inwards`,
-`stock_inward_items`, `stock_movements`, `stock_reservations`, `stock_allocations` with
-`active_key` generated column UQ → no double allocation, `allocation_histories`).
+**Phase 5 — Fulfilment (implemented)**: finance — `financers` (UQ code), `financer_contacts`, `finance_files`
+(UQ file_no, UQ order_id; loan / sanction / DO / disbursement fields, stage_id), `file_queries` (morph; shared with RTO /
+Insurance later); follow-ups reuse the polymorphic `follow_ups`. Accounts — `account_files` (UQ order_id; receivable,
+customer / finance share), `payments` (UQ payment_no; kind receipt | reversal | refund, signed amount, status,
+`reverses_payment_id` UQ, `refund_request_id` UQ; amount and parties immutable), `receipts` (UQ receipt_no per branch,
+UQ payment_id; cancelled, never deleted), `refund_requests`. Balances are computed from payments (cleared + reversed
+rows; reversal and refund rows are negative). Inventory — `stock_locations`, `stock_inwards` (GRN), `inventory_units`
+(UQ chassis_no, UQ engine_no), `stock_allocations` (released, never deleted; `active_unit_key` = unit id while active,
+NULL after release, UNIQUE → no double allocation on MySQL and SQLite), `stock_movements` (append-only ledger).
+`fulfilment_task_types.driven_by` marks tasks that follow a department file. Reservations and in-transit transfers
+are not modelled yet.
 
 **Phase 6** RTO / Insurance / PDI tables per SRS §132, §156, §181.
 

@@ -104,7 +104,7 @@ production `APP_DEBUG=false` with request-ID-tagged generic error pages.
 | 2 CRM | Workflow engine (pulled forward), products, farmers, enquiries + duplicate check + temperature, telecaller queue/claim/call attempts, pipeline + reopen, follow-ups, territory, geography import, CRM API | **Done** (see §11) |
 | 3 Sales | Customers + duplicate check + Customer 360, price master, discount limits, versioned quotations with approval + print, deals with Deal Ready → Approve / Send Back / Reject | **Done** (see §12) |
 | 4 Orders & Documents | Orders, fulfilment + tasks, document center, requirements, verification, reuse, documentation dashboard | **Done** (see §13) |
-| 5 Fulfilment | Retail & Finance, Accounts, Inventory | Planned |
+| 5 Fulfilment | Retail & Finance, Accounts, Inventory | **Done** (see §14) |
 | 6 Compliance | RTO, Insurance, PDI | Planned |
 | 7 Readiness | Rules engine, waivers, readiness engine | Planned |
 | 8 Delivery | Delivery file, scheduling, checklist, images, signature, completion | Planned |
@@ -183,3 +183,25 @@ production `APP_DEBUG=false` with request-ID-tagged generic error pages.
   access is also audited. Reference numbers (Aadhaar, PAN …) are encrypted at rest and shown masked.
 - **Expiry**: `documents:mark-expired` runs daily; requirements also treat a past expiry date as expired immediately.
 - **Unit-level documents** (insurance policy, RC, PDI report) attach to the order until inventory units exist (Phase 5).
+
+## 14. Phase 5 implementation notes
+- **Department files**: `DepartmentFileProvisioner` opens a finance file when the finance task applies and an account
+  file for every order — on booking and again after a requirement change (idempotent, UNIQUE order_id). Tasks with
+  `driven_by` (finance file, account file, allocation) cannot be moved by hand; `FulfilmentTaskFlow::follow()` maps the
+  file stage flags onto the task (completion → Completed, hold / final rejection → On hold, initial → Pending, else In
+  progress). Allocation drives the inventory task by allocated vs required units.
+- **Finance** status is the configurable `finance` workflow and mirrors what the external financer reports (INV-03);
+  completion needs a financer and sanctioned amount. Queries (`file_queries`, Open → In progress → Submitted → Resolved)
+  and follow-ups (polymorphic `follow_ups`, `Followable` interface) hang off the file; reminders cover them too.
+- **Accounts**: record → verify (another person; issues the branch-numbered receipt) → clear. Rejection, bounce
+  (cheque / DD only; cancels the receipt) and reversal (manager, not the recorder; new negative entry referencing the
+  original, original kept as Reversed) never edit amounts — the model refuses. Completion is refused while the cleared
+  balance is short or payments are uncleared; a later bounce or reversal moves a completed file to the system stage
+  Payment short. Refunds: request (≤ excess, or ≤ cleared when the order is cancelled) → approval by someone else
+  holding `accounts.approve_refund` → paid as a negative cleared entry.
+- **Inventory**: GRN creates Available units with an inward movement; chassis / engine numbers are unique. Allocation
+  locks the order and unit rows, checks product, branch and required quantity, and relies on the UNIQUE
+  `active_unit_key` as the last guard (T5). Release / reallocation keep history; transfers and block / unblock are
+  movements. Cancelling an order releases its units and cancels its finance file; the account file stays open for
+  refunds.
+- **Not yet**: stock reservations, in-transit transfers, finance file per multiple financers, GST invoices.
