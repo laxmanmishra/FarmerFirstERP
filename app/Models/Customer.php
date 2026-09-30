@@ -72,6 +72,22 @@ class Customer extends Model
     }
 
     /**
+     * @return HasMany<Order, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class)->latest('id');
+    }
+
+    /**
+     * @return HasMany<Document, $this>
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class)->latest('id');
+    }
+
+    /**
      * @return HasMany<Quotation, $this>
      */
     public function quotations(): HasMany
@@ -114,6 +130,7 @@ class Customer extends Model
 
         $query->where(fn (Builder $query) => $query
             ->whereHas('enquiries', fn (Builder $query) => $query->visibleTo($user))
-            ->orWhereHas('deals', fn (Builder $query) => $query->visibleTo($user)));
+            ->orWhereHas('deals', fn (Builder $query) => $query->visibleTo($user))
+            ->orWhereHas('orders', fn (Builder $query) => $query->visibleTo($user)));
     }
 }

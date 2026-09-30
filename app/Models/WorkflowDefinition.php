@@ -20,6 +20,10 @@ class WorkflowDefinition extends Model
 
     public const DEAL = 'deal';
 
+    public const ORDER = 'order';
+
+    public const FULFILMENT_TASK = 'fulfilment_task';
+
     protected string $auditModule = 'workflow';
 
     protected function casts(): array
