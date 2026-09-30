@@ -75,6 +75,7 @@
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ],
         "test:mysql": [
+            "Composer\\Config::disableProcessTimeout",
             "@php artisan config:clear --ansi",
             "@putenv DB_CONNECTION=mysql",
             "@putenv DB_DATABASE=farmer_first_erp_test",
