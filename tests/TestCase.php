@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\User;
 use Database\Seeders\ReferenceDataSeeder;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -17,6 +18,19 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         $this->withoutVite();
+    }
+
+    /**
+     * AuthenticateSession (auth.session) correctly logs out a session that belongs to a
+     * different password hash, so each switch of user starts from a fresh session.
+     */
+    public function actingAs(Authenticatable $user, $guard = null)
+    {
+        if (auth()->guard($guard)->user()?->isNot($user)) {
+            $this->flushSession();
+        }
+
+        return parent::actingAs($user, $guard);
     }
 
     /**
