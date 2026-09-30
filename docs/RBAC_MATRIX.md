@@ -16,6 +16,9 @@ Administration → Roles; the seeder is additive and never revokes admin-made gr
 - Waiver **approval** is a separate permission from task update `[§32]`; `waivers.approve_critical` is Owner-only by default.
 - Separation of duties: an approver cannot approve their own request (reversal/refund/waiver/discount) — enforced in the Action, not by permission.
 - External parties (financers, insurers, RTO agents) are never users `[INV-08]`.
+- Orders are visible branch-wide to department staff and approvers (`Order::FULFILMENT_WIDE_PERMISSIONS`); salesmen see
+  their own (or team) orders. A fulfilment task is worked only by holders of its type's `update_permission`; a document
+  is verified only by holders of its type's `verification_permission`, never by the uploader of that version.
 
 ## 2. Default matrix (summary)
 Legend: ● full module · ◐ partial · ○ view · – none
@@ -29,7 +32,7 @@ Legend: ● full module · ◐ partial · ○ view · – none
 | Pipeline / Follow-ups | ● | ● | ◐ move own | follow-ups ● | – | – |
 | Customers / Quotations / Deals | ● | ● incl. approve | ◐ create | – | customers ○ | customers ○ |
 | Orders | ● | ◐ view/create | ○ | – | ○ | ○ |
-| Documents | ● | ◐ upload, dashboard | ◐ upload | – | ◐ upload | ◐ + verify |
+| Documents | ● | ◐ upload, verify, sensitive, dashboard | ◐ upload | – | ◐ upload | ◐ + verify, sensitive |
 | Own department (Finance / Accounts / Inventory / RTO / Insurance / PDI / Delivery) | ● | delivery ◐ complete | – | – | ◐ operational actions | ● |
 | Waivers | ● incl. critical | ◐ request/approve/extension | – | – | ◐ request | ◐ request |
 | Readiness | ● incl. override | ○ | ○ | – | ○ | ○ |

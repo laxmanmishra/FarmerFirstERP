@@ -103,7 +103,7 @@ production `APP_DEBUG=false` with request-ID-tagged generic error pages.
 | 1 Foundation | Org structure, geography, auth, RBAC, audit, number series, settings, UI shell, admin screens, API envelope | **Done** (see §10) |
 | 2 CRM | Workflow engine (pulled forward), products, farmers, enquiries + duplicate check + temperature, telecaller queue/claim/call attempts, pipeline + reopen, follow-ups, territory, geography import, CRM API | **Done** (see §11) |
 | 3 Sales | Customers + duplicate check + Customer 360, price master, discount limits, versioned quotations with approval + print, deals with Deal Ready → Approve / Send Back / Reject | **Done** (see §12) |
-| 4 Orders & Documents | Orders, fulfilment + tasks, document center, requirements, verification, reuse, documentation dashboard | Planned |
+| 4 Orders & Documents | Orders, fulfilment + tasks, document center, requirements, verification, reuse, documentation dashboard | **Done** (see §13) |
 | 5 Fulfilment | Retail & Finance, Accounts, Inventory | Planned |
 | 6 Compliance | RTO, Insurance, PDI | Planned |
 | 7 Readiness | Rules engine, waivers, readiness engine | Planned |
@@ -157,5 +157,29 @@ production `APP_DEBUG=false` with request-ID-tagged generic error pages.
 - **Deals** take their figures only from an accepted quotation (no re-entry). Deal stages are a configurable
   workflow whose five stages are `is_system` (renamable, never deactivated). Submit → approve / send back /
   reject with separation of duties and an immutable `deal_approvals` snapshot per step. Approval fixes the exchange
-  tractor's approved value and dispatches `DealApproved`, which Phase 4 turns into the order.
+  tractor's approved value and dispatches `DealApproved`; since Phase 4 the order is booked inside the approval transaction.
 - **Recipients** of approval notifications are loaded with `User::withPermissionInBranch()` (eager, no N+1).
+
+## 13. Phase 4 implementation notes
+- **Booking**: `DealApprovalFlow::decide(Approved)` calls `CreateOrderFromDeal` in the same transaction, so an approved
+  deal always has exactly one order (UNIQUE `orders.deal_id`; a replay returns the existing order). The order freezes the
+  deal's commercial values and a full `deal_snapshot`. `OrderBooked` (after commit) notifies departments with a required task.
+- **Fulfilment tasks** come from `fulfilment_task_types` (admin-editable): condition on the deal flags → Required or
+  Not Required. The requirement state is separate from the operational stage (generic `fulfilment_task` workflow until
+  departments get their own in Phases 5–6). Only holders of the type's `update_permission` work a task; the system
+  Cancelled stage is reachable only by cancelling the order. `orders.create` holders can switch Required / Conditional /
+  Not Required with a reason; WAIVED is reserved for the Phase 7 waiver workflow.
+- **Document requirements**: one row per order × document type × department, generated from
+  `document_requirement_rules` (no task = every order; with a task = follows that task's requirement state). Rows are never
+  deleted, only switched to Not Required. Their status is derived from the linked document, never stored
+  (`DocumentRequirement::status()` and the matching `withStatus()` query scope are tested against each other).
+- **Reuse**: reusable types are searched across the customer, others within the order (deal-level within the deal).
+  "Use existing" links the same document; optional auto-link (setting `documents.auto_link_existing`, default on) links
+  verified reusable documents when an order is booked.
+- **Verification**: permission per document type (`verification_permission`); the uploader of the current version can
+  never verify it. A new version resets verification; versions, verifications and access logs are immutable.
+- **Security**: files on the private `local` disk under random names; `DocumentFileController` checks visibility,
+  sensitivity (`documents.view_sensitive`, the type's verifiers or the uploader) and logs every view/download; sensitive
+  access is also audited. Reference numbers (Aadhaar, PAN …) are encrypted at rest and shown masked.
+- **Expiry**: `documents:mark-expired` runs daily; requirements also treat a past expiry date as expired immediately.
+- **Unit-level documents** (insurance policy, RC, PDI report) attach to the order until inventory units exist (Phase 5).

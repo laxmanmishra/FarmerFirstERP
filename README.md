@@ -24,7 +24,7 @@ php artisan serve
 Notifications are queued and CRM housekeeping is scheduled, so run these alongside the web server:
 ```bash
 php artisan queue:work      # assignment / reopen / follow-up notifications
-php artisan schedule:work   # temperature refresh, follow-up reminders, stale telecaller claims
+php artisan schedule:work   # temperature refresh, follow-up reminders, stale telecaller claims, document expiry
 ```
 
 ### Demo accounts (local only)

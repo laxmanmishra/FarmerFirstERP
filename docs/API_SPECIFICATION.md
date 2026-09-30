@@ -63,6 +63,14 @@ Business-rule errors carry machine-readable `context` (e.g. duplicate ids) along
 | GET | `/api/v1/customers/{id}` | customer with deals |
 | GET | `/api/v1/deals` | visible deals with stage and commercial summary |
 
+## Phase 4 endpoints (implemented)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/v1/orders` | visible orders; `search` by order no, customer name or mobile |
+| GET | `/api/v1/orders/{id}` | order with fulfilment tasks (requirement state + stage) and document checklist (derived status, satisfied, blocks delivery) |
+| POST | `/api/v1/orders/{id}/documents/{requirement}` | multipart `file` (+ `reference_no`, `issue_date`, `expiry_date`, `remarks`); type rules decide allowed files, size and required expiry → 201 |
+| GET | `/api/v1/documents/{id}/file/{version?}` | streams the file (`?download=1` to download); sensitivity-checked and logged |
+
 ## Planned (per phase)
 `farmers`, `enquiries` (+ `duplicates` check endpoint), `telecaller/queue`, `telecaller/{enquiry}/claim`,
 `call-attempts`, `follow-ups`, `pipeline`, `customers`, `quotations`, `deals`, `deals/{id}/approve`, `orders`,

@@ -54,5 +54,12 @@ The suite also runs on MySQL 8: `composer test:mysql` (database `farmer_first_er
 - Price master precedence (variant > generic, branch > all, effective dates) and auto-ending of the previous price.
 - Sales screens render and are refused without permission; sales API visibility.
 
+## 3c. Phase 4 coverage (implemented)
+- Booking: approval creates one order with the frozen snapshot, items, fulfilment and 7 tasks; task and document requirement states follow the deal flags; idempotent; only approved deals; departments with required tasks notified; order visibility.
+- Tasks: owning department only, order enters fulfilment, hold needs remark, Cancelled only through order cancellation, not-required tasks locked, requirement change needs permission + reason and refreshes documents, assignment limited to the department, cancellation keeps history.
+- Documents: satisfied immediately without verification need; verification by another permitted user only; start review; rejection needs reason and notifies uploader; new version keeps history and resets verification; versions immutable; reuse across orders (customer level) but not order-level; auto-link of verified reusable documents; expiry by date and by nightly job (idempotent); file type/size limits with no stray files; upload must match requirement; status scopes equal derived status.
+- Screens: orders list/detail tabs and visibility, task update / requirement change / cancel flows, checklist upload → verify → use existing, sensitive file access restricted and logged + audited, Document Center dashboard drill-downs, repository and verification queue, document detail reject → new version, configuration admin-only with rule uniqueness and effect on next booking, customer 360 / deal / dashboard integration.
+- API: orders list/detail, upload validation + 201, file access log, visibility 404s.
+
 ## 4. Acceptance traceability
 Each SRS acceptance list (`docs/SRS.md` §3) maps to feature tests named `test_<requirement_id>_…` added in the phase that implements the module.

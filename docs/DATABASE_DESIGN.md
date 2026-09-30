@@ -82,10 +82,15 @@ remarks, user_id, created_at)`.
 `quotations`, `quotation_items` (versioned: `quotation_no + version` UQ), `customers` (UQ farmer_id),
 `customer_addresses`, `customer_contacts`, `deals`, `deal_items`, `deal_approvals`.
 
-**Phase 4 — Orders & Documents**: `orders` (UQ deal_id), `order_items`, `fulfilments` (UQ order_id),
-`fulfilment_tasks` (UQ fulfilment_id + task_type; requirement_state, stage_id), `document_types`,
-`documents`, `document_versions`, `document_links`, `document_requirements`, `document_requirement_links`,
-`document_verifications`, `document_access_logs`.
+**Phase 4 — Orders & Documents (implemented)**: `orders` (UQ order_no, UQ deal_id; frozen commercial columns +
+`deal_snapshot` JSON; cancellation fields), `order_items`, `fulfilment_task_types` (UQ code; department, condition,
+blocks_delivery, update_permission), `fulfilments` (UQ fulfilment_no, UQ order_id), `fulfilment_tasks`
+(UQ fulfilment_id + fulfilment_task_type_id; requirement_state, stage_id, responsible), `document_types` (master §187),
+`documents` (UQ document_no; customer/deal/order/department context, status, encrypted reference_no, expiry),
+`document_versions` (UQ document_id + version; immutable), `document_verifications` (immutable),
+`document_requirement_rules` (UQ document_type_id + department_id; optional task type), `document_requirements`
+(UQ order_id + document_type_id + department_id; `document_id` is the reuse link — no separate link tables),
+`document_access_logs` (append-only).
 
 **Phase 5 — Fulfilment**: finance (`finance_files` UQ order_id, `financers`, `financer_contacts`,
 `finance_followups`, `finance_queries`, …); accounts (`account_files`, `payments`, `receipts`,

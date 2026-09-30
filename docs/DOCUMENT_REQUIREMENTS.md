@@ -37,9 +37,11 @@
 | DELIVERY_RECEIPT | Delivery Receipt | order | – | – | – | Delivery |
 
 ## 4. Requirement rules
-`document_requirement_rules`: `(document_type, department, condition, requirement_state, blocks_delivery, due_offset_days)`,
-where `condition` is evaluated against the order context: `finance_required`, `rto_required`,
-`insurance_required`, `pdi_required`, `product_category`, `order_type`, `customer_type`, `branch`.
+`document_requirement_rules`: `(document_type, department, fulfilment_task_type?, blocks_delivery, due_offset_days, is_active)`,
+one rule per type × department. Without a task type the document is required on every order; with one it follows the
+task's requirement state, and the task type's `condition` reads the deal flags (`finance_required`, `rto_required`,
+`insurance_required`, `pdi_required`, `always`). Conditions on product category, order type, customer type and branch
+are future extensions of the task condition.
 
 Examples:
 - finance_required = true → PAN, LAND_DOC, BANK_DOC, FIN_APPLICATION, CREDIT_APPROVAL, DO (DO blocks delivery).
