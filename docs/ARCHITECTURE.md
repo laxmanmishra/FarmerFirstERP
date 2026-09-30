@@ -100,7 +100,7 @@ production `APP_DEBUG=false` with request-ID-tagged generic error pages.
 ## 9. Roadmap
 | Phase | Scope | Status |
 |---|---|---|
-| 1 Foundation | Org structure, geography, auth, RBAC, audit, number series, settings, UI shell, admin screens, API envelope | **In progress (this iteration)** |
+| 1 Foundation | Org structure, geography, auth, RBAC, audit, number series, settings, UI shell, admin screens, API envelope | **Done** (see §10) |
 | 2 CRM | Workflow engine (pulled forward), farmers, enquiries + duplicate check + temperature, telecaller queue/claim/call attempts, follow-ups, territory assignment, geography import | Planned |
 | 3 Sales | Pipeline (Kanban), products/price master, quotations, customers + duplicate service, Customer 360, deals + approval | Planned |
 | 4 Orders & Documents | Orders, fulfilment + tasks, document center, requirements, verification, reuse, documentation dashboard | Planned |
@@ -110,3 +110,16 @@ production `APP_DEBUG=false` with request-ID-tagged generic error pages.
 | 8 Delivery | Delivery file, scheduling, checklist, images, signature, completion | Planned |
 | 9 Management | Targets, achievements, dashboards, reports | Planned |
 | 10 Hardening | Notifications, global search, imports/exports, Docker, monitoring, backups, performance | Planned |
+
+## 10. Phase 1 implementation notes
+- **Authorization:** `UserPolicy` guards account administration (self-lockout, Super Admin protection). Other
+  Phase 1 masters authorise directly on permission names (`$this->authorize('branches.manage')`), which spatie
+  resolves through the Gate. Record-scoped policies arrive with the first transactional module (Phase 2).
+- **Super Admin bypass:** `Gate::before` returns true for Super Admin, so invariants that must hold even for Super
+  Admin (e.g. cannot deactivate own account) are enforced inside Actions, not policies.
+- **Livewire persistence:** `EnsureUserIsActive` is registered as persistent middleware so a deactivated user's open
+  page cannot keep calling actions.
+- **Strict models:** lazy loading and silently discarded attributes throw outside production.
+- **Deferred to later phases** (not stubbed): global search, notification generation (the bell reads the real
+  `notifications` table, which stays empty until Phase 10 events exist), geography Excel/CSV import (Phase 2),
+  2FA, Docker compose (Phase 10).
