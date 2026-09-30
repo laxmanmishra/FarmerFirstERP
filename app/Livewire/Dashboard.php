@@ -8,9 +8,12 @@ use App\Enums\Temperature;
 use App\Models\AuditLog;
 use App\Models\Branch;
 use App\Models\Deal;
+use App\Models\Document;
+use App\Models\DocumentRequirement;
 use App\Models\Employee;
 use App\Models\Enquiry;
 use App\Models\FollowUp;
+use App\Models\Order;
 use App\Models\Quotation;
 use App\Models\ReopenRequest;
 use App\Models\User;
@@ -100,6 +103,19 @@ class Dashboard extends Component
 
         if ($user->can('quotations.approve_discount')) {
             $kpis[] = ['label' => __('Discounts to approve'), 'value' => Quotation::query()->visibleTo($user)->where('status', QuotationStatus::PendingApproval)->count(), 'icon' => 'banknotes', 'href' => route('sales.quotations.index', ['status' => QuotationStatus::PendingApproval->value]), 'tone' => 'rose'];
+        }
+
+        if ($user->can('orders.view')) {
+            $kpis[] = ['label' => __('Open orders'), 'value' => Order::query()->visibleTo($user)->whereHas('stage', fn ($query) => $query->where('is_final', false))->count(), 'icon' => 'clipboard', 'href' => route('sales.orders.index'), 'tone' => 'sky'];
+        }
+
+        if ($user->can('documents.view')) {
+            $requirements = fn () => DocumentRequirement::query()->visibleTo($user);
+            $kpis[] = ['label' => __('Documents blocking delivery'), 'value' => $requirements()->blockingDelivery()->count(), 'icon' => 'folder', 'href' => route('fulfilment.documents.index', ['tab' => 'requirements', 'blocking' => 1]), 'tone' => 'rose'];
+
+            if ($user->can('documents.verify')) {
+                $kpis[] = ['label' => __('Documents to verify'), 'value' => Document::query()->visibleTo($user)->awaitingVerificationBy($user)->count(), 'icon' => 'check-badge', 'href' => route('fulfilment.documents.index', ['tab' => 'verification']), 'tone' => 'amber'];
+            }
         }
 
         if ($user->can('enquiries.reopen')) {

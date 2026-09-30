@@ -7,7 +7,9 @@ use App\Http\Controllers\Api\V1\FarmerController;
 use App\Http\Controllers\Api\V1\FollowUpController;
 use App\Http\Controllers\Api\V1\GeographyController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\SalesController;
+use App\Http\Controllers\DocumentFileController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function (): void {
@@ -30,6 +32,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('customers', [SalesController::class, 'customers'])->name('customers.index');
         Route::get('customers/{customer}', [SalesController::class, 'customer'])->name('customers.show');
         Route::get('deals', [SalesController::class, 'deals'])->name('deals.index');
+
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::post('orders/{order}/documents/{requirement}', [OrderController::class, 'upload'])->name('orders.documents.store');
+        Route::get('documents/{document}/file/{version?}', DocumentFileController::class)->scopeBindings()->name('documents.file');
 
         Route::get('follow-ups', [FollowUpController::class, 'index'])->name('follow-ups.index');
         Route::post('follow-ups/{followUp}/complete', [FollowUpController::class, 'complete'])->name('follow-ups.complete');

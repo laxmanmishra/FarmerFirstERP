@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\DocumentFileController;
 use App\Http\Controllers\EnquiryAttachmentController;
 use App\Http\Controllers\QuotationPrintController;
 use App\Http\Controllers\SwitchBranchController;
@@ -9,6 +10,7 @@ use App\Livewire\Auth\ChangePassword;
 use App\Livewire\Auth\Login;
 use App\Livewire\Crm;
 use App\Livewire\Dashboard;
+use App\Livewire\Fulfilment;
 use App\Livewire\Sales;
 use Illuminate\Support\Facades\Route;
 
@@ -52,6 +54,14 @@ Route::middleware(['auth', 'auth.session', 'active'])->group(function (): void {
             Route::livewire('/deals', Sales\Deals\Index::class)->name('deals.index');
             Route::livewire('/deal-approvals', Sales\Deals\Index::class)->name('deal-approvals.index');
             Route::livewire('/deals/{deal}', Sales\Deals\Show::class)->name('deals.show');
+            Route::livewire('/orders', Sales\Orders\Index::class)->name('orders.index');
+            Route::livewire('/orders/{order}', Sales\Orders\Show::class)->name('orders.show');
+        });
+
+        Route::prefix('fulfilment')->name('fulfilment.')->group(function (): void {
+            Route::livewire('/documents', Fulfilment\Documents\Index::class)->name('documents.index');
+            Route::livewire('/documents/{document}', Fulfilment\Documents\Show::class)->name('documents.show');
+            Route::get('/documents/{document}/file/{version?}', DocumentFileController::class)->scopeBindings()->name('documents.file');
         });
 
         Route::prefix('admin')->name('admin.')->group(function (): void {
@@ -66,6 +76,7 @@ Route::middleware(['auth', 'auth.session', 'active'])->group(function (): void {
             Route::livewire('/products', Admin\Products\Index::class)->name('products.index');
             Route::livewire('/workflows', Admin\Workflows\Index::class)->name('workflows.index');
             Route::livewire('/workflows/{definition}', Admin\Workflows\Edit::class)->name('workflows.edit');
+            Route::livewire('/document-configuration', Admin\DocumentTypes\Index::class)->name('document-types.index');
             Route::livewire('/settings', Admin\Settings\Index::class)->name('settings.index');
             Route::livewire('/audit-logs', Admin\AuditLogs\Index::class)->name('audit-logs.index');
         });

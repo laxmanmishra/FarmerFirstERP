@@ -25,6 +25,13 @@
         <x-ui.kpi-card :label="__('Finance')" :value="$deal->finance_required ? Money::format($deal->finance_amount) : __('Cash deal')" icon="building" tone="amber" />
     </div>
 
+    @if ($deal->order)
+        <x-ui.alert tone="success" class="mb-6" :title="__('Booked as :no', ['no' => $deal->order->order_no])">
+            {{ __('The approved figures are frozen on the order, and fulfilment tasks and the document checklist have been created.') }}
+            @can('orders.view')<a href="{{ route('sales.orders.show', $deal->order) }}" wire:navigate class="font-medium underline">{{ __('Open order') }}</a>@endcan
+        </x-ui.alert>
+    @endif
+
     @if ($deal->isAwaitingApproval() && ! $canDecide && auth()->user()->can('deals.approve'))
         <x-ui.alert class="mb-6">{{ __('You submitted this deal or are its salesman, so another manager must decide it.') }}</x-ui.alert>
     @endif
@@ -133,6 +140,11 @@
                 <dl class="space-y-3">
                     <x-ui.dl-item :label="__('Customer')"><a href="{{ route('sales.customers.show', $deal->customer) }}" wire:navigate class="font-medium text-brand-700 hover:underline">{{ $deal->customer->customer_no }} · {{ $deal->customer->name }}</a></x-ui.dl-item>
                     <x-ui.dl-item :label="__('Enquiry')"><a href="{{ route('crm.enquiries.show', $deal->enquiry_id) }}" wire:navigate class="text-brand-700 hover:underline">{{ $deal->enquiry->enquiry_no }}</a></x-ui.dl-item>
+                    @if ($deal->order)
+                        <x-ui.dl-item :label="__('Order')">
+                            @can('orders.view')<a href="{{ route('sales.orders.show', $deal->order) }}" wire:navigate class="font-medium text-brand-700 hover:underline">{{ $deal->order->order_no }}</a>@else{{ $deal->order->order_no }}@endcan
+                        </x-ui.dl-item>
+                    @endif
                     <x-ui.dl-item :label="__('Primary salesman')">{{ $deal->primarySalesman?->name }}</x-ui.dl-item>
                     <x-ui.dl-item :label="__('Branch')">{{ $deal->branch->name }}</x-ui.dl-item>
                     @if ($deal->enquiry->exchangeTractor)

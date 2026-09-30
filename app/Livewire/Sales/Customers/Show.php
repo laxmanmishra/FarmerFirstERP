@@ -7,7 +7,9 @@ use App\Livewire\Concerns\InteractsWithUi;
 use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\Deal;
+use App\Models\Document;
 use App\Models\Enquiry;
+use App\Models\Order;
 use App\Models\Quotation;
 use App\Models\WorkflowStatusHistory;
 use App\Support\Money;
@@ -19,8 +21,8 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /**
- * Customer 360° (SRS §12): profile, enquiries, quotations, deals and timeline.
- * Documents, payments and fulfilment tabs join as those modules go live.
+ * Customer 360° (SRS §12): profile, enquiries, quotations, deals, orders, documents and timeline.
+ * Payments join when Accounts goes live.
  */
 class Show extends Component
 {
@@ -42,7 +44,7 @@ class Show extends Component
         $this->authorize('customers.view');
         abort_unless(Customer::query()->visibleTo(Auth::user())->whereKey($customer->id)->exists(), 404);
         $this->customerId = $customer->id;
-        $this->tab = in_array($this->tab, ['overview', 'enquiries', 'quotations', 'deals', 'timeline'], true) ? $this->tab : 'overview';
+        $this->tab = in_array($this->tab, ['overview', 'enquiries', 'quotations', 'deals', 'orders', 'documents', 'timeline'], true) ? $this->tab : 'overview';
     }
 
     public function editProfile(): void
@@ -90,6 +92,9 @@ class Show extends Component
             'enquiries' => $enquiries,
             'quotations' => $quotations,
             'deals' => $deals,
+            'orders' => $user->can('orders.view') ? Order::query()->visibleTo($user)->where('customer_id', $customer->id)->with('stage')->latest('id')->get() : collect(),
+            'documents' => $this->tab === 'documents' && $user->can('documents.view')
+                ? Document::query()->visibleTo($user)->where('customer_id', $customer->id)->with(['type', 'order:id,order_no'])->latest('id')->get() : collect(),
             'kpis' => [
                 'enquiries' => $enquiries->count(),
                 'openQuotations' => $quotations->whereIn('status', [QuotationStatus::Draft, QuotationStatus::PendingApproval, QuotationStatus::Issued])->count(),

@@ -44,7 +44,8 @@
         </x-ui.alert>
     @endif
 
-    <x-ui.tabs class="mb-6" :active="$tab" :tabs="['overview' => __('Overview'), 'enquiries' => __('Enquiries'), 'quotations' => __('Quotations'), 'deals' => __('Deals'), 'timeline' => __('Timeline')]" />
+    <x-ui.tabs class="mb-6" :active="$tab" :tabs="array_filter(['overview' => __('Overview'), 'enquiries' => __('Enquiries'), 'quotations' => __('Quotations'), 'deals' => __('Deals'),
+        'orders' => auth()->user()->can('orders.view') ? __('Orders') : null, 'documents' => auth()->user()->can('documents.view') ? __('Documents') : null, 'timeline' => __('Timeline')])" />
 
     @if ($tab === 'overview')
         <div class="grid gap-6 xl:grid-cols-3">
@@ -89,6 +90,35 @@
         </x-ui.card>
     @elseif ($tab === 'deals')
         <x-ui.card :padding="false">@include('livewire.sales.customers.partials.deals', ['deals' => $deals])</x-ui.card>
+    @elseif ($tab === 'orders')
+        <x-ui.card :padding="false">
+            <ul class="divide-y divide-slate-100">
+                @forelse ($orders as $order)
+                    <li><a href="{{ route('sales.orders.show', $order) }}" wire:navigate class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 hover:bg-slate-50">
+                        <span class="tabular text-sm font-medium">{{ $order->order_no }}</span>
+                        <span class="text-xs text-slate-500">{{ $order->order_date->format('d M Y') }}</span>
+                        <span class="tabular text-sm">{{ Money::format($order->order_value) }}</span>
+                        <x-ui.stage-badge :stage="$order->stage" />
+                    </a></li>
+                @empty
+                    <li class="px-5 py-10"><x-ui.empty-state :title="__('No orders')" icon="clipboard" /></li>
+                @endforelse
+            </ul>
+        </x-ui.card>
+    @elseif ($tab === 'documents')
+        <x-ui.card :padding="false" :title="__('Documents')" :description="__('Reusable documents (Aadhaar, PAN, land records…) are linked to new orders instead of being uploaded again.')">
+            <ul class="divide-y divide-slate-100">
+                @forelse ($documents as $document)
+                    <li><a href="{{ route('fulfilment.documents.show', $document) }}" wire:navigate class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 hover:bg-slate-50">
+                        <span class="text-sm font-medium text-slate-900">{{ $document->type->name }} <span class="tabular text-xs font-normal text-slate-500">· {{ $document->document_no }} · v{{ $document->current_version }}</span></span>
+                        <span class="text-xs text-slate-500">{{ $document->order?->order_no }}@if ($document->expiry_date) · {{ __('expires :d', ['d' => $document->expiry_date->format('d M Y')]) }}@endif</span>
+                        <x-ui.badge :tone="$document->status->tone()">{{ $document->status->label() }}</x-ui.badge>
+                    </a></li>
+                @empty
+                    <li class="px-5 py-10"><x-ui.empty-state :title="__('No documents yet')" icon="folder" /></li>
+                @endforelse
+            </ul>
+        </x-ui.card>
     @else
         <x-ui.card><x-ui.timeline :items="$timeline" /></x-ui.card>
     @endif

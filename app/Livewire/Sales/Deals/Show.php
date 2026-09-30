@@ -102,7 +102,7 @@ class Show extends Component
     public function render(DealReadiness $readiness): mixed
     {
         $deal = Deal::query()->with([
-            'stage', 'items', 'customer.village.tehsil.district', 'farmer', 'enquiry.exchangeTractor', 'quotation', 'primarySalesman', 'branch',
+            'stage', 'items', 'customer.village.tehsil.district', 'farmer', 'enquiry.exchangeTractor', 'quotation', 'primarySalesman', 'branch', 'order:id,deal_id,order_no',
             'approvals.user', 'statusHistory.fromStage', 'statusHistory.toStage', 'statusHistory.user',
         ])->findOrFail($this->dealId);
         $user = Auth::user();
