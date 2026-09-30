@@ -56,6 +56,7 @@ class Index extends Component
             'company' => Auth::user()->can('settings.view'),
             'numbering' => Auth::user()->can('number_series.manage'),
             'lists' => Auth::user()->can('settings.view'),
+            'discounts' => Auth::user()->can('settings.view'),
         ]));
 
         $this->tab = in_array($this->tab, $allowed, true) ? $this->tab : $allowed[0];

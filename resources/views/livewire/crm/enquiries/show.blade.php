@@ -135,6 +135,38 @@
                 </dl>
             </x-ui.card>
 
+            @if ($enquiry->pipeline_stage_id)
+                <x-ui.card :title="__('Sales')" :padding="false">
+                    <x-slot:actions>
+                        @if ($canQuote)
+                            <x-ui.button size="xs" icon="plus" :href="route('sales.quotations.create', ['enquiry' => $enquiry->id])" wire:navigate>{{ __('Quotation') }}</x-ui.button>
+                        @endif
+                    </x-slot:actions>
+                    <ul class="divide-y divide-slate-100 text-sm">
+                        @if ($enquiry->customer)
+                            <li class="flex items-center justify-between px-5 py-2.5">
+                                <span class="text-slate-500">{{ __('Customer') }}</span>
+                                <a href="{{ route('sales.customers.show', $enquiry->customer) }}" wire:navigate class="font-medium text-brand-700 hover:underline">{{ $enquiry->customer->customer_no }}</a>
+                            </li>
+                        @endif
+                        @if ($enquiry->deal)
+                            <li class="flex items-center justify-between px-5 py-2.5">
+                                <span class="text-slate-500">{{ __('Deal') }}</span>
+                                <a href="{{ route('sales.deals.show', $enquiry->deal) }}" wire:navigate class="flex items-center gap-2 font-medium text-brand-700 hover:underline">{{ $enquiry->deal->deal_no }} <x-ui.stage-badge :stage="$enquiry->deal->stage" /></a>
+                            </li>
+                        @endif
+                        @forelse ($enquiry->quotations as $quotation)
+                            <li><a href="{{ route('sales.quotations.show', $quotation) }}" wire:navigate class="flex items-center justify-between px-5 py-2.5 hover:bg-slate-50">
+                                <span class="tabular">{{ $quotation->reference() }} · {{ App\Support\Money::format($quotation->net_amount) }}</span>
+                                <x-ui.badge :tone="$quotation->status->tone()">{{ $quotation->status->label() }}</x-ui.badge>
+                            </a></li>
+                        @empty
+                            <li class="px-5 py-4 text-center text-slate-500">{{ __('No quotations yet.') }}</li>
+                        @endforelse
+                    </ul>
+                </x-ui.card>
+            @endif
+
             <x-ui.card :title="__('Follow-ups')" :padding="false">
                 <ul class="divide-y divide-slate-100">
                     @forelse ($enquiry->followUps->where('status', App\Enums\FollowUpStatus::Pending) as $followUp)
@@ -202,7 +234,7 @@
     @if ($modal === 'stage' && $targetStage)
         <x-ui.modal wire:model="modal" :tone="$targetStage->is_rejection ? 'danger' : null"
             :title="__('Move to :stage', ['stage' => $targetStage->name])"
-            :description="$targetStage->is_final ? __('This closes the enquiry.') : null">
+            :description="$targetStage->is_final ? ($targetStage->is_completion ? __('This closes the enquiry, creates or links the customer and opens a draft deal.') : __('This closes the enquiry.')) : null">
             <form id="stage-form" wire:submit="moveStage" class="space-y-4">
                 @if ($targetStage->is_final && $targetStage->is_rejection)
                     <x-ui.select :label="__('Reason')" wire:model="closeReason" name="closeReason" :options="$closeReasons" :placeholder="__('Select reason…')" required />

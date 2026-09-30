@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\FarmerController;
 use App\Http\Controllers\Api\V1\FollowUpController;
 use App\Http\Controllers\Api\V1\GeographyController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\SalesController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function (): void {
@@ -25,6 +26,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('enquiries/duplicates', [EnquiryController::class, 'duplicates'])->name('enquiries.duplicates');
         Route::post('enquiries', [EnquiryController::class, 'store'])->name('enquiries.store');
         Route::get('enquiries/{enquiry}', [EnquiryController::class, 'show'])->name('enquiries.show');
+
+        Route::get('customers', [SalesController::class, 'customers'])->name('customers.index');
+        Route::get('customers/{customer}', [SalesController::class, 'customer'])->name('customers.show');
+        Route::get('deals', [SalesController::class, 'deals'])->name('deals.index');
 
         Route::get('follow-ups', [FollowUpController::class, 'index'])->name('follow-ups.index');
         Route::post('follow-ups/{followUp}/complete', [FollowUpController::class, 'complete'])->name('follow-ups.complete');

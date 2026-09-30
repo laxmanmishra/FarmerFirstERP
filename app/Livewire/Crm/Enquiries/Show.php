@@ -193,6 +193,7 @@ class Show extends Component
             'callAttempts.employee', 'callAttempts.outcome', 'assignments.fromEmployee', 'assignments.toEmployee', 'assignments.assignedBy',
             'followUps.assignee', 'reopenRequests.requester', 'reopenRequests.decider',
             'statusHistory.fromStage', 'statusHistory.toStage', 'statusHistory.user', 'statusHistory.definition',
+            'customer', 'deal.stage', 'quotations',
         ])->findOrFail($this->enquiryId);
 
         $user = Auth::user();
@@ -208,6 +209,7 @@ class Show extends Component
             'closeReasons' => LookupValue::options(LookupValue::CLOSE_REASON),
             'followUpTypes' => LookupValue::options(LookupValue::FOLLOW_UP_TYPE),
             'employees' => Employee::query()->active()->whereHas('departments', fn ($query) => $query->whereIn('code', ['SALES', 'TELECALLING']))->orderBy('name')->pluck('name', 'id'),
+            'canQuote' => $user->can('quotations.create') && (! $enquiry->isClosed() || ($enquiry->pipelineStage?->is_completion && $enquiry->deal?->isEditable())),
             'hasPendingReopen' => $enquiry->reopenRequests->contains('status', ApprovalStatus::Pending),
             'sourceLabel' => LookupValue::label(LookupValue::ENQUIRY_SOURCE, $enquiry->source_code),
             'closeReasonLabel' => LookupValue::label(LookupValue::CLOSE_REASON, $enquiry->close_reason_code),

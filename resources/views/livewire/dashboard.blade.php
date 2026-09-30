@@ -25,7 +25,7 @@
             <x-ui.card :title="__('Operational dashboards')" :description="__('KPIs switch on automatically as each module goes live.')">
                 <ol class="grid gap-3 sm:grid-cols-2">
                     @foreach ([
-                        ['Sales', __('Pipeline, quotations, deals, approvals, Customer 360'), 3],
+
                         ['Orders & Documents', __('Orders, fulfilment tasks, central document centre'), 4],
                         ['Fulfilment', __('Retail & Finance, Accounts, Inventory'), 5],
                         ['Compliance', __('RTO, Insurance, PDI / Workshop'), 6],

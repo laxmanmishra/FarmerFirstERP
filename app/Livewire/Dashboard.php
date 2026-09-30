@@ -3,12 +3,15 @@
 namespace App\Livewire;
 
 use App\Enums\ApprovalStatus;
+use App\Enums\QuotationStatus;
 use App\Enums\Temperature;
 use App\Models\AuditLog;
 use App\Models\Branch;
+use App\Models\Deal;
 use App\Models\Employee;
 use App\Models\Enquiry;
 use App\Models\FollowUp;
+use App\Models\Quotation;
 use App\Models\ReopenRequest;
 use App\Models\User;
 use App\Models\WorkflowDefinition;
@@ -82,6 +85,21 @@ class Dashboard extends Component
             $followUps = fn () => FollowUp::query()->visibleTo($user);
             $kpis[] = ['label' => __('Follow-ups due today'), 'value' => $followUps()->dueToday()->count(), 'icon' => 'calendar', 'href' => route('crm.follow-ups.index'), 'tone' => 'amber'];
             $kpis[] = ['label' => __('Overdue follow-ups'), 'value' => $followUps()->overdue()->count(), 'icon' => 'exclamation', 'href' => route('crm.follow-ups.index', ['tab' => 'overdue']), 'tone' => 'rose'];
+        }
+
+        if ($user->can('deals.view')) {
+            $dealStages = WorkflowStage::query()->ofDefinition(WorkflowDefinition::DEAL)->pluck('id', 'code');
+            $kpis[] = ['label' => __('Deals in progress'), 'value' => Deal::query()->visibleTo($user)->whereIn('stage_id', $dealStages->only([Deal::STAGE_DRAFT, Deal::STAGE_SENT_BACK])->values())->count(), 'icon' => 'handshake', 'href' => route('sales.deals.index'), 'tone' => 'sky'];
+            $kpis[] = ['label' => __('Deals approved this month'), 'value' => Deal::query()->visibleTo($user)->where('stage_id', $dealStages[Deal::STAGE_APPROVED] ?? 0)->where('approved_at', '>=', now()->startOfMonth())->count(), 'icon' => 'check-badge', 'href' => route('sales.deals.index', ['stage' => $dealStages[Deal::STAGE_APPROVED] ?? '']), 'tone' => 'brand'];
+        }
+
+        if ($user->can('deals.approve')) {
+            $readyId = WorkflowStage::findByCode(WorkflowDefinition::DEAL, Deal::STAGE_READY)->id;
+            $kpis[] = ['label' => __('Deals awaiting approval'), 'value' => Deal::query()->visibleTo($user)->where('stage_id', $readyId)->count(), 'icon' => 'clock', 'href' => route('sales.deal-approvals.index'), 'tone' => 'amber'];
+        }
+
+        if ($user->can('quotations.approve_discount')) {
+            $kpis[] = ['label' => __('Discounts to approve'), 'value' => Quotation::query()->visibleTo($user)->where('status', QuotationStatus::PendingApproval)->count(), 'icon' => 'banknotes', 'href' => route('sales.quotations.index', ['status' => QuotationStatus::PendingApproval->value]), 'tone' => 'rose'];
         }
 
         if ($user->can('enquiries.reopen')) {

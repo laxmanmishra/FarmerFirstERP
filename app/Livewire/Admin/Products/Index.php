@@ -167,6 +167,6 @@ class Index extends Component
 
     private function normaliseTab(): void
     {
-        $this->tab = in_array($this->tab, ['brands', 'products', 'variants'], true) ? $this->tab : 'products';
+        $this->tab = in_array($this->tab, ['brands', 'products', 'variants', 'prices'], true) ? $this->tab : 'products';
     }
 }

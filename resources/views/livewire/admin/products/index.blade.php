@@ -2,13 +2,17 @@
     <x-ui.page-header :title="__('Products')" :description="__('Catalogue of tractors and implements used by enquiries, quotations and orders.')"
         :breadcrumbs="[__('Administration') => null, __('Products') => null]">
         <x-slot:actions>
-            @can('products.manage')
+            @if ($tab !== 'prices' && auth()->user()->can('products.manage'))
                 <x-ui.button icon="plus" wire:click="create">{{ ['brands' => __('New brand'), 'products' => __('New model'), 'variants' => __('New variant')][$tab] }}</x-ui.button>
-            @endcan
+            @endif
         </x-slot:actions>
     </x-ui.page-header>
 
-    <x-ui.tabs class="mb-4" :active="$tab" :tabs="['products' => __('Models'), 'variants' => __('Variants'), 'brands' => __('Brands')]" />
+    <x-ui.tabs class="mb-4" :active="$tab" :tabs="['products' => __('Models'), 'variants' => __('Variants'), 'brands' => __('Brands'), 'prices' => __('Prices')]" />
+
+    @if ($tab === 'prices')
+        <livewire:admin.products.prices />
+    @else
 
     <x-ui.table :paginator="$records">
         <x-slot:toolbar>
@@ -60,7 +64,7 @@
                 @endif
                 <x-ui.td><x-ui.active-badge :active="$record->is_active" /></x-ui.td>
                 <x-ui.td align="right">
-                    @can('products.manage')
+                    @if ($tab !== 'prices' && auth()->user()->can('products.manage'))
                         <div class="flex justify-end gap-1 whitespace-nowrap">
                             <x-ui.button variant="ghost" size="xs" icon="pencil" wire:click="edit({{ $record->id }})">{{ __('Edit') }}</x-ui.button>
                             <x-ui.button variant="ghost" size="xs" wire:click="toggleActive({{ $record->id }})">{{ $record->is_active ? __('Deactivate') : __('Activate') }}</x-ui.button>
@@ -72,8 +76,9 @@
             <x-ui.empty-row :colspan="6" :title="__('Nothing in the catalogue yet')" icon="cube" />
         @endforelse
     </x-ui.table>
+    @endif
 
-    <x-ui.drawer wire:model="showForm" :title="($editingId ? __('Edit') : __('New')).' '.['brands' => __('brand'), 'products' => __('model'), 'variants' => __('variant')][$tab]">
+    <x-ui.drawer wire:model="showForm" :title="($editingId ? __('Edit') : __('New')).' '.(['brands' => __('brand'), 'products' => __('model'), 'variants' => __('variant')][$tab] ?? '')">
         <form id="product-form" wire:submit="save" class="space-y-5">
             @if ($tab === 'brands')
                 <x-ui.input :label="__('Code')" wire:model="form.code" name="form.code" required maxlength="20" />

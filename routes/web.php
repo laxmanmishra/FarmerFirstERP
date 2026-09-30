@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\EnquiryAttachmentController;
+use App\Http\Controllers\QuotationPrintController;
 use App\Http\Controllers\SwitchBranchController;
 use App\Livewire\Admin;
 use App\Livewire\Auth\ChangePassword;
 use App\Livewire\Auth\Login;
 use App\Livewire\Crm;
 use App\Livewire\Dashboard;
+use App\Livewire\Sales;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -37,6 +39,19 @@ Route::middleware(['auth', 'auth.session', 'active'])->group(function (): void {
             Route::livewire('/pipeline', Crm\Pipeline\Index::class)->name('pipeline.index');
             Route::livewire('/reopen-requests', Crm\ReopenRequests\Index::class)->name('reopen-requests.index');
             Route::livewire('/territory', Crm\Territory\Index::class)->name('territory.index');
+        });
+
+        Route::prefix('sales')->name('sales.')->group(function (): void {
+            Route::livewire('/customers', Sales\Customers\Index::class)->name('customers.index');
+            Route::livewire('/customers/{customer}', Sales\Customers\Show::class)->name('customers.show');
+            Route::livewire('/quotations', Sales\Quotations\Index::class)->name('quotations.index');
+            Route::livewire('/quotations/create', Sales\Quotations\Form::class)->name('quotations.create');
+            Route::livewire('/quotations/{quotation}', Sales\Quotations\Show::class)->name('quotations.show');
+            Route::livewire('/quotations/{quotation}/edit', Sales\Quotations\Form::class)->name('quotations.edit');
+            Route::get('/quotations/{quotation}/print', QuotationPrintController::class)->name('quotations.print');
+            Route::livewire('/deals', Sales\Deals\Index::class)->name('deals.index');
+            Route::livewire('/deal-approvals', Sales\Deals\Index::class)->name('deal-approvals.index');
+            Route::livewire('/deals/{deal}', Sales\Deals\Show::class)->name('deals.show');
         });
 
         Route::prefix('admin')->name('admin.')->group(function (): void {
