@@ -46,5 +46,13 @@ Run: `php artisan test --compact` (SQLite in-memory). MySQL: `DB_CONNECTION=mysq
 
 The suite also runs on MySQL 8: `composer test:mysql` (database `farmer_first_erp_test`).
 
+## 3b. Phase 3 coverage (implemented)
+- Money and calculator: exact decimals, rounding, Indian grouping, discount/finance/exchange limits.
+- Conversion: WON creates CUSTOMER_ID and draft deal with primary salesman; idempotent; repeat buyer linked; same-mobile other farmer flagged; accepted quotation applied.
+- Quotations: numbering and versions, validated enquiry required, discount approval by limit and not self, owner override, revise/supersede, accept supersedes others, expiry, price-master prefill, protected print view.
+- Deals: readiness list, submit notifies approvers and locks, approve raises DealApproved, salesman/submitter cannot decide, send back needs remarks and reopens editing, reject closes, exchange value approved, finance/booking limits, immutable history, system stages protected, screen flow and visibility.
+- Price master precedence (variant > generic, branch > all, effective dates) and auto-ending of the previous price.
+- Sales screens render and are refused without permission; sales API visibility.
+
 ## 4. Acceptance traceability
 Each SRS acceptance list (`docs/SRS.md` §3) maps to feature tests named `test_<requirement_id>_…` added in the phase that implements the module.

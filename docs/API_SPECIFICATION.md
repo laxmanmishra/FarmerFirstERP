@@ -56,6 +56,13 @@ Every response carries header `X-Request-Id`.
 
 Business-rule errors carry machine-readable `context` (e.g. duplicate ids) alongside `type: business_rule_error`.
 
+## Phase 3 endpoints (implemented)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/v1/customers` | visible customers; `search` by name, mobile or customer no |
+| GET | `/api/v1/customers/{id}` | customer with deals |
+| GET | `/api/v1/deals` | visible deals with stage and commercial summary |
+
 ## Planned (per phase)
 `farmers`, `enquiries` (+ `duplicates` check endpoint), `telecaller/queue`, `telecaller/{enquiry}/claim`,
 `call-attempts`, `follow-ups`, `pipeline`, `customers`, `quotations`, `deals`, `deals/{id}/approve`, `orders`,

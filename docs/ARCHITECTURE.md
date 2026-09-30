@@ -102,7 +102,7 @@ production `APP_DEBUG=false` with request-ID-tagged generic error pages.
 |---|---|---|
 | 1 Foundation | Org structure, geography, auth, RBAC, audit, number series, settings, UI shell, admin screens, API envelope | **Done** (see §10) |
 | 2 CRM | Workflow engine (pulled forward), products, farmers, enquiries + duplicate check + temperature, telecaller queue/claim/call attempts, pipeline + reopen, follow-ups, territory, geography import, CRM API | **Done** (see §11) |
-| 3 Sales | Pipeline (Kanban), products/price master, quotations, customers + duplicate service, Customer 360, deals + approval | Planned |
+| 3 Sales | Customers + duplicate check + Customer 360, price master, discount limits, versioned quotations with approval + print, deals with Deal Ready → Approve / Send Back / Reject | **Done** (see §12) |
 | 4 Orders & Documents | Orders, fulfilment + tasks, document center, requirements, verification, reuse, documentation dashboard | Planned |
 | 5 Fulfilment | Retail & Finance, Accounts, Inventory | Planned |
 | 6 Compliance | RTO, Insurance, PDI | Planned |
@@ -143,3 +143,19 @@ production `APP_DEBUG=false` with request-ID-tagged generic error pages.
   attaches customer creation to it. Until then WON closes the enquiry only.
 - **Windows note**: translation keys that equal a lang file name (`__('Validation')`) return arrays on
   case-insensitive filesystems — use descriptive keys.
+
+## 12. Phase 3 implementation notes
+- **WON → customer → deal**: `EnquiryWon` (after commit) runs `ConvertWonEnquiry`, idempotent via UNIQUE
+  `deals.enquiry_id` and UNIQUE `customers.farmer_id`. A different farmer sharing the mobile creates a new customer
+  flagged `possible_duplicate_of_id` for review (merge tooling is future work).
+- **Money** is decimal strings via bcmath (`App\Support\Money`); `QuotationCalculator` is the single source of the
+  commercial arithmetic (gross → discount → tax → line total; charges separate; net = items + charges − exchange;
+  contribution = net − finance).
+- **Quotations** are versioned documents (`quotation_no` + `version`); a discount above the preparer's role limit
+  (`discount_limits`) needs approval by another user whose limit covers it. Accepting supersedes the enquiry's other
+  quotations and refreshes an editable deal.
+- **Deals** take their figures only from an accepted quotation (no re-entry). Deal stages are a configurable
+  workflow whose five stages are `is_system` (renamable, never deactivated). Submit → approve / send back /
+  reject with separation of duties and an immutable `deal_approvals` snapshot per step. Approval fixes the exchange
+  tractor's approved value and dispatches `DealApproved`, which Phase 4 turns into the order.
+- **Recipients** of approval notifications are loaded with `User::withPermissionInBranch()` (eager, no N+1).

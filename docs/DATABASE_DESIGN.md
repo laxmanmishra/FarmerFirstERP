@@ -78,7 +78,7 @@ remarks, user_id, created_at)`.
 `farmers`, `enquiries`, `enquiry_requirements`, `exchange_tractors`, `enquiry_attachments`,
 `enquiry_assignments`, `call_attempts`, `follow_ups`, `territory_assignments`, `reopen_requests`.
 
-**Phase 3 — Sales**: `categories`, `brands`, `products`, `product_variants`, `price_lists`, `price_list_items`,
+**Phase 3 — Sales (implemented)** — as outlined plus `discount_limits`, `product_prices` (effective-dated), `deal_approvals` (immutable snapshots), `customers.possible_duplicate_of_id`, `enquiries.customer_id`, `workflow_stages.is_system`. Planned list below kept for reference: `categories`, `brands`, `products`, `product_variants`, `price_lists`, `price_list_items`,
 `quotations`, `quotation_items` (versioned: `quotation_no + version` UQ), `customers` (UQ farmer_id),
 `customer_addresses`, `customer_contacts`, `deals`, `deal_items`, `deal_approvals`.
 
