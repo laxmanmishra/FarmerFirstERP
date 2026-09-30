@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\DocumentFileController;
 use App\Http\Controllers\EnquiryAttachmentController;
 use App\Http\Controllers\QuotationPrintController;
+use App\Http\Controllers\ReceiptPrintController;
 use App\Http\Controllers\SwitchBranchController;
 use App\Livewire\Admin;
 use App\Livewire\Auth\ChangePassword;
@@ -62,6 +63,13 @@ Route::middleware(['auth', 'auth.session', 'active'])->group(function (): void {
             Route::livewire('/documents', Fulfilment\Documents\Index::class)->name('documents.index');
             Route::livewire('/documents/{document}', Fulfilment\Documents\Show::class)->name('documents.show');
             Route::get('/documents/{document}/file/{version?}', DocumentFileController::class)->scopeBindings()->name('documents.file');
+            Route::livewire('/finance', Fulfilment\Finance\Index::class)->name('finance.index');
+            Route::livewire('/finance/{file}', Fulfilment\Finance\Show::class)->name('finance.show');
+            Route::livewire('/accounts', Fulfilment\Accounts\Index::class)->name('accounts.index');
+            Route::livewire('/accounts/{file}', Fulfilment\Accounts\Show::class)->name('accounts.show');
+            Route::get('/receipts/{receipt}', ReceiptPrintController::class)->name('accounts.receipt');
+            Route::livewire('/inventory', Fulfilment\Inventory\Index::class)->name('inventory.index');
+            Route::livewire('/inventory/units/{unit}', Fulfilment\Inventory\Unit::class)->name('inventory.units.show');
         });
 
         Route::prefix('admin')->name('admin.')->group(function (): void {

@@ -140,6 +140,7 @@ class Show extends Component
             'stage', 'items', 'customer.village.tehsil.district', 'deal:id,deal_no', 'primarySalesman', 'branch', 'cancelledBy:id,name',
             'fulfilment.tasks' => fn ($query) => $query->with(['type', 'stage.definition', 'department', 'responsible'])->orderBy('id'),
             'documentRequirements' => fn ($query) => $query->with('document.type'),
+            'financeFile:id,order_id,file_no', 'accountFile:id,order_id,file_no', 'activeAllocations.unit:id,chassis_no,engine_no',
         ])->findOrFail($this->orderId);
 
         $user = Auth::user();

@@ -76,6 +76,9 @@
                         @can('deals.view')<a href="{{ route('sales.deals.show', $order->deal_id) }}" wire:navigate class="text-brand-700 hover:underline">{{ $order->deal->deal_no }}</a>@else{{ $order->deal->deal_no }}@endcan
                     </x-ui.dl-item>
                     <x-ui.dl-item :label="__('Fulfilment')">{{ $order->fulfilment?->fulfilment_no }}</x-ui.dl-item>
+                    @if ($order->activeAllocations->isNotEmpty())
+                        <x-ui.dl-item :label="__('Allocated unit')"><span class="tabular">{{ $order->activeAllocations->map(fn ($allocation) => $allocation->unit->chassis_no)->implode(', ') }}</span></x-ui.dl-item>
+                    @endif
                     <x-ui.dl-item :label="__('Primary salesman')">{{ $order->primarySalesman?->name }}</x-ui.dl-item>
                     <x-ui.dl-item :label="__('Expected delivery')">{{ $order->expected_delivery_date?->format('d M Y') }}</x-ui.dl-item>
                     <x-ui.dl-item :label="__('Booking amount')">{{ Money::format($order->booking_amount) }}</x-ui.dl-item>
@@ -111,8 +114,21 @@
                     <x-ui.td class="text-sm">{{ $task->responsible?->name ?? '—' }}</x-ui.td>
                     <x-ui.td class="whitespace-nowrap text-xs text-slate-500">{{ $task->updated_at->diffForHumans() }}</x-ui.td>
                     <x-ui.td align="right" class="whitespace-nowrap">
+                        @php $driven = $task->type->driven_by; @endphp
+                        @if ($driven === 'finance_file' && $order->financeFile)
+                            @can('finance.view')<x-ui.button size="sm" variant="secondary" :href="route('fulfilment.finance.show', $order->financeFile)" wire:navigate>{{ $order->financeFile->file_no }}</x-ui.button>@endcan
+                        @elseif ($driven === 'account_file' && $order->accountFile)
+                            @can('accounts.view')<x-ui.button size="sm" variant="secondary" :href="route('fulfilment.accounts.show', $order->accountFile)" wire:navigate>{{ $order->accountFile->file_no }}</x-ui.button>@endcan
+                        @elseif ($driven === 'allocation')
+                            @foreach ($order->activeAllocations as $allocation)
+                                @can('inventory.view')<x-ui.button size="sm" variant="secondary" :href="route('fulfilment.inventory.units.show', $allocation->inventory_unit_id)" wire:navigate>{{ $allocation->unit->chassis_no }}</x-ui.button>@else<span class="tabular text-xs">{{ $allocation->unit->chassis_no }}</span>@endcan
+                            @endforeach
+                            @if ($order->activeAllocations->isEmpty() && ! $order->isCancelled())
+                                @can('inventory.allocate')<x-ui.button size="sm" variant="secondary" :href="route('fulfilment.inventory.index', ['tab' => 'allocation'])" wire:navigate>{{ __('Allocate unit') }}</x-ui.button>@endcan
+                            @endif
+                        @endif
                         @unless ($order->isCancelled())
-                            @if ($workable[$task->id] && $task->requirement_state->isApplicable() && ! $task->stage->is_final)
+                            @if (! $driven && $workable[$task->id] && $task->requirement_state->isApplicable() && ! $task->stage->is_final)
                                 <x-ui.button size="sm" variant="secondary" wire:click="openTask({{ $task->id }}, 'status')">{{ __('Update') }}</x-ui.button>
                             @endif
                             @if ($workable[$task->id])

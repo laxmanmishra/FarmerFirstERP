@@ -7,6 +7,7 @@ use App\Enums\FollowUpStatus;
 use App\Livewire\Concerns\InteractsWithUi;
 use App\Livewire\Concerns\WithDataTable;
 use App\Models\Enquiry;
+use App\Models\FinanceFile;
 use App\Models\FollowUp;
 use App\Models\LookupValue;
 use Carbon\CarbonImmutable;
@@ -97,7 +98,7 @@ class Index extends Component
             ->when($this->scope === 'mine' || ! $user->canAny(['enquiries.view_team', 'enquiries.view_all']), fn (Builder $query) => $query->where('assigned_employee_id', $user->employee?->id));
 
         $query = $base()
-            ->with(['assignee:id,name', 'followable' => fn ($morph) => $morph->morphWith([Enquiry::class => ['farmer.village']])])
+            ->with(['assignee:id,name', 'followable' => fn ($morph) => $morph->morphWith([Enquiry::class => ['farmer.village'], FinanceFile::class => ['order.customer']])])
             ->when($this->searchTerm(), fn (Builder $query, string $term) => $query->where(fn (Builder $query) => $query
                 ->where('purpose', 'like', $term)
                 ->orWhereHasMorph('followable', [Enquiry::class], fn (Builder $query) => $query->where('enquiry_no', 'like', $term)

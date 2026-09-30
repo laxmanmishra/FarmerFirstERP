@@ -3,8 +3,11 @@
 namespace App\Livewire;
 
 use App\Enums\ApprovalStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\QuotationStatus;
 use App\Enums\Temperature;
+use App\Enums\UnitStatus;
+use App\Models\AccountFile;
 use App\Models\AuditLog;
 use App\Models\Branch;
 use App\Models\Deal;
@@ -12,8 +15,11 @@ use App\Models\Document;
 use App\Models\DocumentRequirement;
 use App\Models\Employee;
 use App\Models\Enquiry;
+use App\Models\FinanceFile;
 use App\Models\FollowUp;
+use App\Models\InventoryUnit;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Quotation;
 use App\Models\ReopenRequest;
 use App\Models\User;
@@ -116,6 +122,19 @@ class Dashboard extends Component
             if ($user->can('documents.verify')) {
                 $kpis[] = ['label' => __('Documents to verify'), 'value' => Document::query()->visibleTo($user)->awaitingVerificationBy($user)->count(), 'icon' => 'check-badge', 'href' => route('fulfilment.documents.index', ['tab' => 'verification']), 'tone' => 'amber'];
             }
+        }
+
+        if ($user->can('finance.view')) {
+            $kpis[] = ['label' => __('Open finance files'), 'value' => FinanceFile::query()->visibleTo($user)->whereHas('stage', fn ($query) => $query->where('is_final', false))->count(), 'icon' => 'banknotes', 'href' => route('fulfilment.finance.index'), 'tone' => 'sky'];
+        }
+
+        if ($user->canAny(['accounts.verify_payment', 'accounts.clear_payment'])) {
+            $kpis[] = ['label' => __('Payments to verify / clear'), 'value' => Payment::query()->whereIn('account_file_id', AccountFile::query()->visibleTo($user)->select('account_files.id'))
+                ->whereIn('status', [PaymentStatus::PendingVerification, PaymentStatus::Verified])->count(), 'icon' => 'calculator', 'href' => route('fulfilment.accounts.index', ['tab' => 'verification']), 'tone' => 'amber'];
+        }
+
+        if ($user->can('inventory.view')) {
+            $kpis[] = ['label' => __('Units in stock'), 'value' => InventoryUnit::query()->visibleTo($user)->where('status', UnitStatus::Available)->count(), 'icon' => 'cube', 'href' => route('fulfilment.inventory.index', ['status' => UnitStatus::Available->value]), 'tone' => 'brand'];
         }
 
         if ($user->can('enquiries.reopen')) {

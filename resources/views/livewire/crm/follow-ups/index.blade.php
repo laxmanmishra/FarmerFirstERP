@@ -44,6 +44,8 @@
                     @if ($enquiry)
                         <a href="{{ route('crm.enquiries.show', $enquiry) }}" wire:navigate class="text-sm font-medium text-slate-900 hover:text-brand-700">{{ $enquiry->enquiry_no }}</a>
                         <p class="text-xs text-slate-500">{{ $enquiry->farmer->name }} · <a href="tel:{{ $enquiry->farmer->mobile }}" class="tabular hover:text-brand-700">{{ $enquiry->farmer->mobile }}</a></p>
+                    @elseif ($followUp->followable instanceof App\Models\Concerns\Followable)
+                        <a href="{{ $followUp->followable->followUpUrl() }}" wire:navigate class="text-sm font-medium text-slate-900 hover:text-brand-700">{{ $followUp->followable->followUpSubject() }}</a>
                     @endif
                 </x-ui.td>
                 <x-ui.td class="text-sm">{{ $followUp->assignee->name }}</x-ui.td>

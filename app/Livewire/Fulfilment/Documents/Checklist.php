@@ -28,6 +28,10 @@ class Checklist extends Component
     #[Locked]
     public int $orderId;
 
+    /** Limits the checklist to one department (department file screens). */
+    #[Locked]
+    public ?int $departmentId = null;
+
     /** 'upload' | 'link' | 'reject'; false/null when closed. */
     public mixed $modal = null;
 
@@ -42,12 +46,13 @@ class Checklist extends Component
 
     public string $reason = '';
 
-    public function mount(int $orderId): void
+    public function mount(int $orderId, ?int $departmentId = null): void
     {
         $this->authorize('documents.view');
         abort_unless(Order::query()->visibleTo(Auth::user())->whereKey($orderId)->exists(), 404);
 
         $this->orderId = $orderId;
+        $this->departmentId = $departmentId;
     }
 
     public function open(int $requirementId, string $mode): void
@@ -133,6 +138,7 @@ class Checklist extends Component
         $order = Order::query()->with('customer:id,name')->findOrFail($this->orderId);
         $requirements = DocumentRequirement::query()
             ->where('order_id', $this->orderId)
+            ->when($this->departmentId, fn ($query, int $id) => $query->where('department_id', $id))
             ->with(['documentType', 'department:id,name,sort_order', 'responsible:id,name', 'document.type', 'document.currentVersion.uploader:id,name'])
             ->get()
             ->sortBy([fn ($a, $b) => $a->department->sort_order <=> $b->department->sort_order, fn ($a, $b) => $a->documentType->sort_order <=> $b->documentType->sort_order]);
