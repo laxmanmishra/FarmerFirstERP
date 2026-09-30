@@ -50,9 +50,11 @@ class CrmScreensRenderTest extends TestCase
     }
 
     #[DataProvider('screens')]
-    public function test_screen_renders_for_owner(string $route): void
+    public function test_screen_renders_for_owner(string $route, string $permission): void
     {
-        $this->actingAs($this->demoUser('owner'))->get(route($route))->assertOk();
+        $owner = $this->demoUser('owner');
+        $this->assertTrue($owner->can($permission));
+        $this->actingAs($owner)->get(route($route))->assertOk();
     }
 
     #[DataProvider('screens')]

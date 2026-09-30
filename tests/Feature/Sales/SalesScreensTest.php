@@ -45,9 +45,11 @@ class SalesScreensTest extends TestCase
     }
 
     #[DataProvider('lists')]
-    public function test_list_renders_for_manager_and_is_forbidden_without_permission(string $route): void
+    public function test_list_renders_for_manager_and_is_forbidden_without_permission(string $route, string $permission): void
     {
-        $this->actingAs($this->demo('sales.manager'))->get(route($route))->assertOk();
+        $manager = $this->demo('sales.manager');
+        $this->assertTrue($manager->can($permission));
+        $this->actingAs($manager)->get(route($route))->assertOk();
         $this->actingAs($this->userWithPermissions(['dashboard.view']))->get(route($route))->assertForbidden();
     }
 
