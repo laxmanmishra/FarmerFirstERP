@@ -68,7 +68,7 @@ class Checklist extends Component
         $this->modal = $mode;
     }
 
-    public function upload(StoreDocument $store): void
+    public function saveUpload(StoreDocument $store): void
     {
         $this->authorize('documents.upload');
         $requirement = $this->requirement((int) $this->requirementId);

@@ -82,7 +82,7 @@
     @if ($modal === 'upload' && $current)
         <x-ui.modal wire:model="modal" :title="__('Upload :type', ['type' => $current->documentType->name])"
             :description="__('Allowed: :ext, up to :size MB. Stored privately; every version is kept.', ['ext' => strtoupper(implode(', ', $current->documentType->extensions())), 'size' => round($current->documentType->max_size_kb / 1024, 1)])">
-            <form id="upload-form" wire:submit="upload" class="space-y-4">
+            <form id="upload-form" wire:submit="saveUpload" class="space-y-4">
                 <div>
                     <label for="doc-file" class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('File') }} <span class="text-rose-600">*</span></label>
                     <input id="doc-file" type="file" wire:model="file" accept="{{ collect($current->documentType->extensions())->map(fn ($e) => '.'.$e)->implode(',') }}" capture="environment"
@@ -101,7 +101,7 @@
             </form>
             <x-slot:footer>
                 <x-ui.button variant="secondary" x-on:click="open = false">{{ __('Cancel') }}</x-ui.button>
-                <x-ui.button type="submit" form="upload-form" wire:target="upload,file">{{ __('Upload') }}</x-ui.button>
+                <x-ui.button type="submit" form="upload-form" wire:target="saveUpload,file">{{ __('Upload') }}</x-ui.button>
             </x-slot:footer>
         </x-ui.modal>
     @elseif ($modal === 'link' && $current)

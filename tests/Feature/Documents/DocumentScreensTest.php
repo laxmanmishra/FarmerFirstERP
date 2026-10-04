@@ -124,11 +124,11 @@ class DocumentScreensTest extends TestCase
         Livewire::actingAs($this->salesman)->test(Checklist::class, ['orderId' => $this->order->id])
             ->call('open', $aadhaar->id, 'upload')
             ->set('file', UploadedFile::fake()->create('notes.txt', 5, 'text/plain'))
-            ->call('upload')
+            ->call('saveUpload')
             ->assertHasErrors('file')
             ->set('file', UploadedFile::fake()->create('aadhaar.pdf', 100, 'application/pdf'))
             ->set('meta.reference_no', '999988887777')
-            ->call('upload')
+            ->call('saveUpload')
             ->assertHasNoErrors()
             ->assertDispatched('documents-changed');
 
